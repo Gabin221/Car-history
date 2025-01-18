@@ -26,6 +26,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonRightCar: TextView
     private lateinit var buttonSearchGasStation: TextView
     private lateinit var lineGraphView: GraphView
+    private lateinit var iconGasStation: TextView
+    private lateinit var iconRSquare: TextView
+    private lateinit var iconEqual: TextView
 
     private val logoData = listOf(
         Pair(R.drawable.account_circle_outline, "buttonAccount"),
@@ -33,7 +36,10 @@ class MainActivity : AppCompatActivity() {
         Pair(R.drawable.plus_thick, "buttonAddPlein"),
         Pair(R.drawable.arrow_left_bold, "buttonLeftCar"),
         Pair(R.drawable.arrow_right_bold, "buttonRightCar"),
-        Pair(R.drawable.magnify, "buttonSearchGasStation")
+        Pair(R.drawable.magnify, "buttonSearchGasStation"),
+        Pair(R.drawable.gas_station_outline, "iconGasStation"),
+        Pair(R.drawable.format_superscript, "iconRSquare"),
+        Pair(R.drawable.equal, "iconEqual")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +59,9 @@ class MainActivity : AppCompatActivity() {
         buttonRightCar = findViewById(R.id.buttonRightCar)
         buttonSearchGasStation = findViewById(R.id.buttonSearchGasStation)
         lineGraphView = findViewById(R.id.lineGraphView)
+        iconGasStation = findViewById(R.id.iconGasStation)
+        iconRSquare = findViewById(R.id.iconRSquare)
+        iconEqual = findViewById(R.id.iconEqual)
 
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
