@@ -6,4 +6,8 @@
     <color name="button_account_color">#D57373</color>
     <color name="button_car_info_color">#20C7CA</color>
     <color name="background_color_modale_stats">#F2F2F2</color>
+    <color name="turn_signals_color">#8db853</color>
+    <color name="title_color">#919191</color>
+    <color name="background_color_cards">#424242</color>
+    <color name="chart_color">#FED047</color>
 </resources>
