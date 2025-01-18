@@ -2,5 +2,8 @@
 <resources>
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
-    <color name="background_color_app">#000000</color>
+    <color name="background_color_app">#131313</color>
+    <color name="button_account_color">#D57373</color>
+    <color name="button_car_info_color">#20C7CA</color>
+    <color name="background_color_modale_stats">#F2F2F2</color>
 </resources>
