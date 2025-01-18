@@ -40,6 +40,14 @@ class MainActivity : AppCompatActivity() {
         buttonCarInfo = findViewById(R.id.buttonCarInfo)
         buttonAddPlein = findViewById(R.id.buttonAddPlein)
 
+        val inflater = this.layoutInflater
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+        builder
+            .setView(inflater.inflate(R.layout.stats_window_modale, null))
+
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
+
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
