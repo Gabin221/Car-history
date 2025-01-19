@@ -121,22 +121,16 @@ class MainActivity : AppCompatActivity() {
             arrayOf(
                 DataPoint(0.0, 10.0),
                 DataPoint(1.0, 12.0),
-                DataPoint(2.0, 4.0),
-                DataPoint(3.0, 7.0),
-                DataPoint(4.0, 6.0),
-                DataPoint(5.0, 2.0),
-                DataPoint(6.0, 11.0),
-                DataPoint(7.0, 19.0),
-                DataPoint(8.0, 18.0),
+                DataPoint(2.0, 7.0),
+                DataPoint(3.0, 6.0),
+                DataPoint(4.0, 11.0),
+                DataPoint(5.0, 15.0),
+                DataPoint(6.0, 16.0),
+                DataPoint(7.0, 14.0),
+                DataPoint(8.0, 17.0),
                 DataPoint(9.0, 15.0),
-                DataPoint(10.0, 16.0),
-                DataPoint(11.0, 14.0),
-                DataPoint(12.0, 17.0),
-                DataPoint(13.0, 15.0),
-                DataPoint(14.0, 13.0),
-                DataPoint(15.0, 14.0),
-                DataPoint(16.0, 16.0),
-                DataPoint(17.0, 18.0)
+                DataPoint(10.0, 13.0),
+                DataPoint(11.0, 14.0)
             )
         )
 
@@ -144,8 +138,9 @@ class MainActivity : AppCompatActivity() {
 
         lineGraphView.gridLabelRenderer.apply {
             isHorizontalLabelsVisible = false
-            isVerticalLabelsVisible = false
+            isVerticalLabelsVisible = true
             gridStyle = GridLabelRenderer.GridStyle.NONE
+            verticalLabelsColor = resources.getColor(R.color.white, null)
         }
 
         lineGraphView.viewport.isScrollable = false
