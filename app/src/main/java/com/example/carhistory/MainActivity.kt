@@ -20,26 +20,9 @@ import com.jjoe64.graphview.series.LineGraphSeries
 class MainActivity : AppCompatActivity() {
 
     private lateinit var buttonAccount: TextView
-    private lateinit var buttonCarInfo: TextView
-    private lateinit var buttonAddPlein: TextView
-    private lateinit var buttonLeftCar: TextView
-    private lateinit var buttonRightCar: TextView
-    private lateinit var buttonSearchGasStation: TextView
-    private lateinit var lineGraphView: GraphView
-    private lateinit var iconGasStation: TextView
-    private lateinit var iconRSquare: TextView
-    private lateinit var iconEqual: TextView
 
     private val logoData = listOf(
-        Pair(R.drawable.account_circle_outline, "buttonAccount"),
-        Pair(R.drawable.car_info, "buttonCarInfo"),
-        Pair(R.drawable.plus_thick, "buttonAddPlein"),
-        Pair(R.drawable.arrow_left_bold, "buttonLeftCar"),
-        Pair(R.drawable.arrow_right_bold, "buttonRightCar"),
-        Pair(R.drawable.magnify, "buttonSearchGasStation"),
-        Pair(R.drawable.gas_station_outline, "iconGasStation"),
-        Pair(R.drawable.format_superscript, "iconRSquare"),
-        Pair(R.drawable.equal, "iconEqual")
+        Pair(R.drawable.account_box_outline, "buttonAccount")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,15 +36,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         buttonAccount = findViewById(R.id.buttonAccount)
-        buttonCarInfo = findViewById(R.id.buttonCarInfo)
-        buttonAddPlein = findViewById(R.id.buttonAddPlein)
-        buttonLeftCar = findViewById(R.id.buttonLeftCar)
-        buttonRightCar = findViewById(R.id.buttonRightCar)
-        buttonSearchGasStation = findViewById(R.id.buttonSearchGasStation)
-        lineGraphView = findViewById(R.id.lineGraphView)
-        iconGasStation = findViewById(R.id.iconGasStation)
-        iconRSquare = findViewById(R.id.iconRSquare)
-        iconEqual = findViewById(R.id.iconEqual)
 
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
@@ -73,6 +47,7 @@ class MainActivity : AppCompatActivity() {
             dialog.show()
         }
 
+        /*
         buttonCarInfo.setOnClickListener {
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
             builder
@@ -98,9 +73,9 @@ class MainActivity : AppCompatActivity() {
             val dialog: AlertDialog = builder.create()
             dialog.show()
         }
+         */
 
         initLogo()
-        graphe1()
     }
 
     fun initLogo() {
@@ -116,6 +91,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /*
     fun graphe1() {
         val series: LineGraphSeries<DataPoint> = LineGraphSeries(
             arrayOf(
@@ -149,5 +125,5 @@ class MainActivity : AppCompatActivity() {
         lineGraphView.viewport.setScrollableY(false)
 
         lineGraphView.addSeries(series)
-    }
+    }*/
 }
