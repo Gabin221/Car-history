@@ -28,9 +28,9 @@
         </LinearLayout>
 
         <TextView
+            android:id="@+id/titrePage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Peugeot 206+"
             android:textSize="30sp"
             android:textAlignment="center"
             android:textColor="@color/color_title"

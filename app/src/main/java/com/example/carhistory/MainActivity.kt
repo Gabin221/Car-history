@@ -4,13 +4,19 @@ import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
+import android.util.Log
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.GridLabelRenderer
 import com.jjoe64.graphview.series.DataPoint
@@ -20,6 +26,7 @@ import com.jjoe64.graphview.series.LineGraphSeries
 class MainActivity : AppCompatActivity() {
 
     private lateinit var buttonAccount: TextView
+    private lateinit var titrePage: TextView
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount")
@@ -36,6 +43,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         buttonAccount = findViewById(R.id.buttonAccount)
+        titrePage = findViewById(R.id.titrePage)
 
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
@@ -76,6 +84,7 @@ class MainActivity : AppCompatActivity() {
          */
 
         initLogo()
+        recupererInfosVoitures(2)
     }
 
     fun initLogo() {
@@ -89,6 +98,25 @@ class MainActivity : AppCompatActivity() {
             spannableString.setSpan(imageSpan, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             textView.text = spannableString
         }
+    }
+
+    private fun recupererInfosVoitures(valeur_id: Int) {
+        val queue = Volley.newRequestQueue(this)
+        val url = "https://gabinserrurot.fr/Api_carhistory/recupererInfos.php?valeur_id=$valeur_id"
+
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                val parts = response.split(";")
+                val titre = parts[0] + " " + parts[1]
+                titrePage.text = titre
+            },
+            { error ->
+                Log.e("Volley", "Erreur de requête : ${error.message}")
+                Toast.makeText(this, "Problème de récupération des infos", Toast.LENGTH_SHORT).show()
+            })
+
+        queue.add(stringRequest)
     }
 
     /*
