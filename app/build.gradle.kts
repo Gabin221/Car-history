@@ -47,6 +47,7 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
 
     implementation("com.jjoe64:graphview:4.2.2")
+    implementation(libs.volley)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
