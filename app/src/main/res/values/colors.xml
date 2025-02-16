@@ -16,4 +16,6 @@
     <color name="background_mean">#36DF93</color>
     <color name="background_new">#F4CB36</color>
     <color name="text_color_grey">#A4A4A4</color>
+    <color name="background_buy_date">#36F4D4</color>
+    <color name="background_dist_run">#E28AF1</color>
 </resources>

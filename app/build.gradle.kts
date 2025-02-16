@@ -50,6 +50,8 @@ dependencies {
     implementation(libs.volley)
     implementation("androidx.constraintlayout:constraintlayout:2.2.0-beta01")
     implementation("com.github.bumptech.glide:glide:4.16.0")
+    implementation("com.google.android.material:material:1.10.0")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 

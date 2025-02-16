@@ -11,7 +11,6 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -20,11 +19,10 @@ import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
 import com.jjoe64.graphview.GraphView
-import com.jjoe64.graphview.GridLabelRenderer
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
-import com.example.carhistory.ValuesManager
-
+import org.json.JSONArray
+import org.json.JSONException
 
 class MainActivity : AppCompatActivity() {
 
@@ -35,6 +33,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonCenterCar: TextView
     private lateinit var lineGraphView: GraphView
     private lateinit var imageCar: ImageView
+    private lateinit var textBuyDate: TextView
+    private lateinit var textDistRun: TextView
+    private lateinit var buttonSearchGasStation: TextView
+    private lateinit var textCoordinates: TextView
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
@@ -60,6 +62,9 @@ class MainActivity : AppCompatActivity() {
         buttonCenterCar = findViewById(R.id.buttonCenterCar)
         lineGraphView = findViewById(R.id.lineGraphView)
         imageCar = findViewById(R.id.imageCar)
+        textBuyDate = findViewById(R.id.textBuyDate)
+        textDistRun = findViewById(R.id.textDistRun)
+        buttonSearchGasStation = findViewById(R.id.buttonSearchGasStation)
 
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
@@ -81,17 +86,21 @@ class MainActivity : AppCompatActivity() {
             ValuesManager.currentIDCar++
         }
 
-        /*
-        buttonCarInfo.setOnClickListener {
+        buttonSearchGasStation.setOnClickListener {
+            val inflater = this.layoutInflater
+            val dialogView = inflater.inflate(R.layout.find_gas_stations, null)
+            textCoordinates = dialogView.findViewById(R.id.textCoordinates)
+
+            recupererFindGasStation()
+
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-            builder
-                .setTitle("Fiche technique")
-                .setMessage("I am the message")
+            builder.setView(dialogView)
 
             val dialog: AlertDialog = builder.create()
             dialog.show()
         }
 
+        /*
         buttonAddPlein.setOnClickListener {
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
             builder
@@ -107,7 +116,7 @@ class MainActivity : AppCompatActivity() {
             val dialog: AlertDialog = builder.create()
             dialog.show()
         }
-         */
+        */
 
         initLogo()
         graphe1()
@@ -136,11 +145,13 @@ class MainActivity : AppCompatActivity() {
             { response ->
                 val parts = response.split(";")
                 val titre = parts[0] + " " + parts[1]
+                val imageUrl = parts[2]
+                val dateAchat = parts[3]
+                val distance = parts[4]
                 titrePage.text = titre
                 buttonCenterCar.text = titre
-
-                // Récupération de l'URL de l'image
-                val imageUrl = parts.getOrNull(2) ?: ""
+                textBuyDate.text = dateAchat
+                textDistRun.text = distance + " km"
 
                 if (imageUrl.isNotEmpty()) {
                     Glide.with(this)
@@ -152,6 +163,32 @@ class MainActivity : AppCompatActivity() {
             { error ->
                 Log.e("Volley", "Erreur de requête : ${error.message}")
                 Toast.makeText(this, "Problème de récupération des infos", Toast.LENGTH_SHORT).show()
+            })
+
+        queue.add(stringRequest)
+    }
+
+    private fun recupererFindGasStation() {
+        val queue = Volley.newRequestQueue(this)
+        val url = "https://www.comparateur-prix-carburants.fr/comparateur-station-service/search/maps/all?latitude=4726141.793175175&longitude=596917.4087706337&distanceKm=20000&shortage=N&energies=SP95-E5,SP95-E10&services=&compagnies="
+
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                try {
+                    val jsonArray = JSONArray(response)
+                    textCoordinates.text = jsonArray.getString(1).toString()
+                } catch (e: JSONException) {
+                    Log.e("Volley", "Erreur JSON : ${e.message}")
+                    textCoordinates.text = "Erreur JSON"
+                }
+            },
+            { error ->
+                Log.e("Volley", "Erreur de requête : ${error.networkResponse?.statusCode} - ${error.message}")
+                if (error.networkResponse != null) {
+                    Log.e("Volley", "Réponse serveur : ${String(error.networkResponse.data)}")
+                }
+                Toast.makeText(this, "Problème de récupération des stations essences.", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
