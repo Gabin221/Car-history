@@ -35,7 +35,9 @@ class MainActivity : AppCompatActivity() {
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
-        Pair(R.drawable.car_wrench, "iconMaintenance")
+        Pair(R.drawable.car_wrench, "iconMaintenance"),
+        Pair(R.drawable.map_search_outline, "buttonSearchGasStation"),
+        Pair(R.drawable.plus_circle_outline, "buttonNew")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
