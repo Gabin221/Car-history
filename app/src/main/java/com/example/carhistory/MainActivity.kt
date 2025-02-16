@@ -31,6 +31,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonLeftCar: TextView
     private lateinit var buttonRightCar: TextView
     private lateinit var buttonCenterCar: TextView
+    private lateinit var lineGraphView: GraphView
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
@@ -52,6 +53,7 @@ class MainActivity : AppCompatActivity() {
         buttonLeftCar = findViewById(R.id.buttonLeftCar)
         buttonRightCar = findViewById(R.id.buttonRightCar)
         buttonCenterCar = findViewById(R.id.buttonCenterCar)
+        lineGraphView = findViewById(R.id.lineGraphView)
 
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
@@ -102,6 +104,7 @@ class MainActivity : AppCompatActivity() {
          */
 
         initLogo()
+        graphe1()
         recupererInfosVoitures(2)
     }
 
@@ -120,7 +123,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun recupererInfosVoitures(valeur_id: Int) {
         val queue = Volley.newRequestQueue(this)
-        val url = "use/your/api?valeur_id=$valeur_id"
+        val url = "https://gabinserrurot.fr/Api_carhistory/recupererInfos.php?valeur_id=$valeur_id"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
@@ -138,7 +141,6 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
-    /*
     fun graphe1() {
         val series: LineGraphSeries<DataPoint> = LineGraphSeries(
             arrayOf(
@@ -160,10 +162,11 @@ class MainActivity : AppCompatActivity() {
         series.color = resources.getColor(R.color.chart_color, null)
 
         lineGraphView.gridLabelRenderer.apply {
-            isHorizontalLabelsVisible = false
+            isHorizontalLabelsVisible = true
             isVerticalLabelsVisible = true
-            gridStyle = GridLabelRenderer.GridStyle.NONE
             verticalLabelsColor = resources.getColor(R.color.white, null)
+            horizontalLabelsColor = resources.getColor(R.color.white, null)
+            gridColor = resources.getColor(R.color.white, null)
         }
 
         lineGraphView.viewport.isScrollable = false
@@ -172,5 +175,5 @@ class MainActivity : AppCompatActivity() {
         lineGraphView.viewport.setScrollableY(false)
 
         lineGraphView.addSeries(series)
-    }*/
+    }
 }

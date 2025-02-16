@@ -39,10 +39,28 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginHorizontal="10dp"
+            android:padding="5dp"
+            android:background="@drawable/rounded_elements_20"
+            android:backgroundTint="@color/background_color_cards"
+            android:layout_marginBottom="10dp">
+
+            <com.jjoe64.graphview.GraphView
+                android:id="@+id/lineGraphView"
+                android:layout_width="match_parent"
+                android:layout_height="110dp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:backgroundTint="@color/background_color_maintenance"
             android:background="@drawable/rounded_elements_20"
             android:layout_marginBottom="10dp"
+            android:layout_marginHorizontal="10dp"
             android:gravity="center_vertical">
 
             <TextView
@@ -95,52 +113,6 @@
                 android:layout_gravity="center"
                 android:background="@drawable/menu_right_outline" />
         </LinearLayout>
-
-        <!--
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="15dp"
-            android:paddingHorizontal="10dp">
-
-            <TextView
-                android:id="@+id/buttonLeftCar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical" />
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="206+"
-                android:textSize="25sp"
-                android:textColor="@color/white"
-                android:textAlignment="center" />
-
-            <TextView
-                android:id="@+id/buttonRightCar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginHorizontal="10dp"
-            android:paddingBottom="10dp"
-            android:backgroundTint="@color/background_color_cards">
-
-            <com.jjoe64.graphview.GraphView
-                android:id="@+id/lineGraphView"
-                android:layout_width="match_parent"
-                android:layout_height="110dp" />
-
-        </LinearLayout>
-        -->
 
     </LinearLayout>
 
