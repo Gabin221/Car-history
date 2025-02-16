@@ -5,6 +5,7 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
 import android.util.Log
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -17,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
+import com.bumptech.glide.Glide
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.GridLabelRenderer
 import com.jjoe64.graphview.series.DataPoint
@@ -32,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonRightCar: TextView
     private lateinit var buttonCenterCar: TextView
     private lateinit var lineGraphView: GraphView
+    private lateinit var imageCar: ImageView
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
@@ -56,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         buttonRightCar = findViewById(R.id.buttonRightCar)
         buttonCenterCar = findViewById(R.id.buttonCenterCar)
         lineGraphView = findViewById(R.id.lineGraphView)
+        imageCar = findViewById(R.id.imageCar)
 
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
@@ -134,6 +138,16 @@ class MainActivity : AppCompatActivity() {
                 val titre = parts[0] + " " + parts[1]
                 titrePage.text = titre
                 buttonCenterCar.text = titre
+
+                // Récupération de l'URL de l'image
+                val imageUrl = parts.getOrNull(2) ?: ""
+
+                if (imageUrl.isNotEmpty()) {
+                    Glide.with(this)
+                        .load(imageUrl)
+                        .into(imageCar)
+                }
+
             },
             { error ->
                 Log.e("Volley", "Erreur de requête : ${error.message}")

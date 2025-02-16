@@ -49,6 +49,9 @@ dependencies {
     implementation("com.jjoe64:graphview:4.2.2")
     implementation(libs.volley)
     implementation("androidx.constraintlayout:constraintlayout:2.2.0-beta01")
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
