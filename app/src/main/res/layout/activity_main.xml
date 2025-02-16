@@ -36,6 +36,66 @@
             android:textColor="@color/color_title"
             android:textStyle="bold" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:backgroundTint="@color/background_color_maintenance"
+            android:background="@drawable/rounded_elements_20"
+            android:layout_marginBottom="10dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/iconMaintenance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"/>
+
+            <TextView
+                android:id="@+id/buttonMaintenanceIncomming"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Entretiens à venir"
+                android:textSize="20sp"
+                android:textColor="@color/black" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="15dp">
+
+            <TextView
+                android:id="@+id/buttonLeftCar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/menu_left_outline" />
+
+            <TextView
+                android:id="@+id/buttonCenterCar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:paddingVertical="5dp"
+                android:layout_gravity="center"
+                android:textSize="20sp"
+                android:textColor="@color/black"
+                android:backgroundTint="@color/grey"
+                android:textAlignment="center"
+                android:background="@drawable/rounded_elements_20" />
+
+            <TextView
+                android:id="@+id/buttonRightCar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:background="@drawable/menu_right_outline" />
+        </LinearLayout>
+
         <!--
         <LinearLayout
             android:layout_width="match_parent"

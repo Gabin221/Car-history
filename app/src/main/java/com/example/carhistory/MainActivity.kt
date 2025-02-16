@@ -21,15 +21,20 @@ import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.GridLabelRenderer
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
+import com.example.carhistory.ValuesManager
 
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var buttonAccount: TextView
     private lateinit var titrePage: TextView
+    private lateinit var buttonLeftCar: TextView
+    private lateinit var buttonRightCar: TextView
+    private lateinit var buttonCenterCar: TextView
 
     private val logoData = listOf(
-        Pair(R.drawable.account_box_outline, "buttonAccount")
+        Pair(R.drawable.account_box_outline, "buttonAccount"),
+        Pair(R.drawable.car_wrench, "iconMaintenance")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,6 +49,9 @@ class MainActivity : AppCompatActivity() {
 
         buttonAccount = findViewById(R.id.buttonAccount)
         titrePage = findViewById(R.id.titrePage)
+        buttonLeftCar = findViewById(R.id.buttonLeftCar)
+        buttonRightCar = findViewById(R.id.buttonRightCar)
+        buttonCenterCar = findViewById(R.id.buttonCenterCar)
 
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
@@ -53,6 +61,16 @@ class MainActivity : AppCompatActivity() {
 
             val dialog: AlertDialog = builder.create()
             dialog.show()
+        }
+
+        buttonLeftCar.setOnClickListener {
+            recupererInfosVoitures(ValuesManager.currentIDCar - 1)
+            ValuesManager.currentIDCar--
+        }
+
+        buttonRightCar.setOnClickListener {
+            recupererInfosVoitures(ValuesManager.currentIDCar + 1)
+            ValuesManager.currentIDCar++
         }
 
         /*
@@ -110,6 +128,7 @@ class MainActivity : AppCompatActivity() {
                 val parts = response.split(";")
                 val titre = parts[0] + " " + parts[1]
                 titrePage.text = titre
+                buttonCenterCar.text = titre
             },
             { error ->
                 Log.e("Volley", "Erreur de requête : ${error.message}")
