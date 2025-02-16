@@ -1,5 +1,10 @@
 package com.example.carhistory
 
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationManager
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.Spanned
@@ -11,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -169,15 +175,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun recupererFindGasStation() {
+        val coordonnees = getLastKnownLocation(this)
+        val latitude = coordonnees[0]
+        val longitude = coordonnees[1]
         val queue = Volley.newRequestQueue(this)
-        val url = "https://www.comparateur-prix-carburants.fr/comparateur-station-service/search/maps/all?latitude=4726141.793175175&longitude=596917.4087706337&distanceKm=20000&shortage=N&energies=SP95-E5,SP95-E10&services=&compagnies="
+        val url = "https://www.comparateur-prix-carburants.fr/comparateur-station-service/search/maps/all?latitude=$latitude&longitude=$longitude&distanceKm=20000&shortage=N&energies=SP95-E5,SP95-E10&services=&compagnies="
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
             { response ->
                 try {
                     val jsonArray = JSONArray(response)
-                    textCoordinates.text = jsonArray.getString(1).toString()
+                    textCoordinates.text = jsonArray.toString()
                 } catch (e: JSONException) {
                     Log.e("Volley", "Erreur JSON : ${e.message}")
                     textCoordinates.text = "Erreur JSON"
@@ -192,6 +201,36 @@ class MainActivity : AppCompatActivity() {
             })
 
         queue.add(stringRequest)
+    }
+
+    fun getLastKnownLocation(context: Context): List<String> {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val providers = locationManager.getProviders(true)
+        val gps = DoubleArray(2)
+        var location: Location? = null
+
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.e("getLastKnownLocation", "Location permissions are not granted.")
+            return listOf("", "")
+        }
+
+        for (provider in providers) {
+            location = locationManager.getLastKnownLocation(provider)
+            if (location != null) {
+                break // Stop looking for locations if one is found
+            }
+        }
+
+        if (location != null) {
+            gps[0] = location.latitude
+            gps[1] = location.longitude
+            Log.d("getLastKnownLocation", "Latitude: ${gps[0]}, Longitude: ${gps[1]}")
+            return listOf(gps[0].toString(), gps[1].toString())
+        } else {
+            Log.e("getLastKnownLocation", "Could not get the location.")
+            return listOf("", "")
+        }
     }
 
     fun graphe1() {
