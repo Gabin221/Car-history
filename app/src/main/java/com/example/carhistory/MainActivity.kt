@@ -123,7 +123,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun recupererInfosVoitures(valeur_id: Int) {
         val queue = Volley.newRequestQueue(this)
-        val url = "https://gabinserrurot.fr/Api_carhistory/recupererInfos.php?valeur_id=$valeur_id"
+        val url = "use/your/api?valeur_id=$valeur_id"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
