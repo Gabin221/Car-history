@@ -3,6 +3,7 @@
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.icu.text.SimpleDateFormat
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
@@ -24,12 +25,15 @@ import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
+import com.jjoe64.graphview.DefaultLabelFormatter
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.util.Date
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -138,8 +142,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         initLogo()
-        graphe1()
-        recupererInfosVoitures(2)
+        recupererInfosVoitures(ValuesManager.currentIDCar)
+        recupererDonneesGraphe(ValuesManager.currentIDCar)
     }
 
     fun initLogo() {
@@ -157,7 +161,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun recupererInfosVoitures(valeur_id: Int) {
         val queue = Volley.newRequestQueue(this)
-        val url = "use/your/script?valeur_id=$valeur_id"
+        val url = "use/your/script/recupererInfos.php?valeur_id=$valeur_id"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
@@ -216,6 +220,53 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
+    private fun recupererDonneesGraphe(valeur_id: Int) {
+        val url = "use/your/script/recupererPleins.php?valeur_id=$valeur_id"
+
+        val queue = Volley.newRequestQueue(this)
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                try {
+                    val listeDataPoints = traiterDonnees(response)
+                    graphe1(listeDataPoints)
+                } catch (e: Exception) {
+                    Log.e("Volley", "Erreur traitement : ${e.message}")
+                }
+            },
+            { error ->
+                Log.e("Volley", "Erreur requÃªte : ${error.networkResponse?.statusCode} - ${error.message}")
+            }
+        )
+
+        queue.add(stringRequest)
+    }
+
+    private fun traiterDonnees(data: String): List<DataPoint> {
+        val dataPoints = mutableListOf<DataPoint>()
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE) // Format de tes dates
+
+        for (valeur in data.split("|")) {
+            val elements = valeur.split(";")
+            if (elements.size >= 3) {
+                try {
+                    val date = dateFormat.parse(elements[0]) ?: continue // Convertir la date
+                    val distance = elements[1].toDouble()
+                    val volume = elements[2].toDouble()
+                    val consommation = volume * 100 / distance // Calcul dÃ©jÃ  fait
+
+                    // Convertir la date en timestamp (nombre de jours depuis 1970)
+                    val timestamp = date.time.toDouble() / (1000 * 60 * 60 * 24) // Convertir en jours
+
+                    dataPoints.add(DataPoint(timestamp, consommation))
+                } catch (e: Exception) {
+                    Log.e("Parsing", "Erreur conversion : ${e.message}")
+                }
+            }
+        }
+        return dataPoints
+    }
+
     fun formatStationData(json: String): String {
         val jsonArray = JSONArray(json)
         val result = StringBuilder()
@@ -223,18 +274,19 @@ class MainActivity : AppCompatActivity() {
         for (i in 0 until jsonArray.length()) {
             val station = jsonArray.getJSONObject(i)
 
-            val stationName = station.getString("name").trim()
+            val stationName = station.getString("name").trim().encodeToUtf8()
+            val compagnyName = station.getString("compagny").trim().encodeToUtf8()
             val latitude = station.getDouble("latitude")
             val longitude = station.getDouble("longitude")
 
-            result.append("- $stationName ($latitude - $longitude):\n")
+            result.append("* $stationName - $compagnyName ($latitude - $longitude):\n")
 
             val energyPrices = station.getJSONArray("energyPrices")
             if (energyPrices != null) {
                 for (j in 0 until energyPrices.length()) {
                     val energyObject = energyPrices.getJSONObject(j)
 
-                    val energyName = energyObject.getString("energy")
+                    val energyName = energyObject.getString("energy").encodeToUtf8()
                     val price = energyObject.getDouble("value")
 
                     result.append("    - $energyName: $price euros\n")
@@ -244,6 +296,10 @@ class MainActivity : AppCompatActivity() {
 
         }
         return result.toString().trim()
+    }
+
+    fun String.encodeToUtf8(): String {
+        return String(this.toByteArray(Charsets.ISO_8859_1), Charsets.UTF_8)
     }
 
     fun getLastKnownLocation(context: Context): List<String> {
@@ -276,24 +332,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun graphe1() {
-        val series: LineGraphSeries<DataPoint> = LineGraphSeries(
-            arrayOf(
-                DataPoint(0.0, 10.0),
-                DataPoint(1.0, 12.0),
-                DataPoint(2.0, 7.0),
-                DataPoint(3.0, 6.0),
-                DataPoint(4.0, 11.0),
-                DataPoint(5.0, 15.0),
-                DataPoint(6.0, 16.0),
-                DataPoint(7.0, 14.0),
-                DataPoint(8.0, 17.0),
-                DataPoint(9.0, 15.0),
-                DataPoint(10.0, 13.0),
-                DataPoint(11.0, 14.0)
-            )
-        )
-
+    fun graphe1(dataPoints: List<DataPoint>) {
+        val series = LineGraphSeries(dataPoints.toTypedArray())
         series.color = resources.getColor(R.color.chart_color, null)
 
         lineGraphView.gridLabelRenderer.apply {
@@ -301,13 +341,22 @@ class MainActivity : AppCompatActivity() {
             isVerticalLabelsVisible = true
             verticalLabelsColor = resources.getColor(R.color.white, null)
             horizontalLabelsColor = resources.getColor(R.color.white, null)
-            gridColor = resources.getColor(R.color.white, null)
+            labelFormatter = object : DefaultLabelFormatter() {
+                private val dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault())
+
+                override fun formatLabel(value: Double, isValueX: Boolean): String {
+                    return if (isValueX) dateFormat.format(Date(value.toLong())) else super.formatLabel(value, isValueX)
+                }
+            }
         }
 
-        lineGraphView.viewport.isScrollable = false
-        lineGraphView.viewport.isScalable = false
-        lineGraphView.viewport.setScalableY(false)
-        lineGraphView.viewport.setScrollableY(false)
+        lineGraphView.viewport.apply {
+            isXAxisBoundsManual = true
+            isScalable = true
+            isScrollable = true
+            setMinX(dataPoints.first().x)
+            setMaxX(dataPoints.last().x)
+        }
 
         lineGraphView.addSeries(series)
     }
