@@ -1,4 +1,4 @@
-package com.example.carhistory
+﻿package com.example.carhistory
 
 import android.Manifest
 import android.content.Context
@@ -29,6 +29,7 @@ import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
 import org.json.JSONArray
 import org.json.JSONException
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,6 +38,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonLeftCar: TextView
     private lateinit var buttonRightCar: TextView
     private lateinit var buttonCenterCar: TextView
+    private lateinit var buttonAddPlein: TextView
     private lateinit var lineGraphView: GraphView
     private lateinit var imageCar: ImageView
     private lateinit var textBuyDate: TextView
@@ -48,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         Pair(R.drawable.account_box_outline, "buttonAccount"),
         Pair(R.drawable.car_wrench, "iconMaintenance"),
         Pair(R.drawable.map_search_outline, "buttonSearchGasStation"),
-        Pair(R.drawable.plus_circle_outline, "buttonNew")
+        Pair(R.drawable.plus_circle_outline, "buttonAddPlein")
     )
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,11 +68,24 @@ class MainActivity : AppCompatActivity() {
         buttonLeftCar = findViewById(R.id.buttonLeftCar)
         buttonRightCar = findViewById(R.id.buttonRightCar)
         buttonCenterCar = findViewById(R.id.buttonCenterCar)
+        buttonAddPlein = findViewById(R.id.buttonAddPlein)
         lineGraphView = findViewById(R.id.lineGraphView)
         imageCar = findViewById(R.id.imageCar)
         textBuyDate = findViewById(R.id.textBuyDate)
         textDistRun = findViewById(R.id.textDistRun)
         buttonSearchGasStation = findViewById(R.id.buttonSearchGasStation)
+
+        val inflater = this.layoutInflater
+        val dialogView = inflater.inflate(R.layout.find_gas_stations, null)
+        textCoordinates = dialogView.findViewById(R.id.textCoordinates)
+
+        recupererFindGasStation()
+
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+        builder.setView(dialogView)
+
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
 
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
@@ -106,7 +121,6 @@ class MainActivity : AppCompatActivity() {
             dialog.show()
         }
 
-        /*
         buttonAddPlein.setOnClickListener {
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
             builder
@@ -122,7 +136,6 @@ class MainActivity : AppCompatActivity() {
             val dialog: AlertDialog = builder.create()
             dialog.show()
         }
-        */
 
         initLogo()
         graphe1()
@@ -144,7 +157,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun recupererInfosVoitures(valeur_id: Int) {
         val queue = Volley.newRequestQueue(this)
-        val url = "use/your/api?valeur_id=$valeur_id"
+        val url = "use/your/script?valeur_id=$valeur_id"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
@@ -167,8 +180,8 @@ class MainActivity : AppCompatActivity() {
 
             },
             { error ->
-                Log.e("Volley", "Erreur de requête : ${error.message}")
-                Toast.makeText(this, "Problème de récupération des infos", Toast.LENGTH_SHORT).show()
+                Log.e("Volley", "Erreur de requÃªte : ${error.message}")
+                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
@@ -186,25 +199,55 @@ class MainActivity : AppCompatActivity() {
             { response ->
                 try {
                     val jsonArray = JSONArray(response)
-                    textCoordinates.text = jsonArray.toString()
+                    textCoordinates.text = formatStationData(jsonArray.toString())
                 } catch (e: JSONException) {
                     Log.e("Volley", "Erreur JSON : ${e.message}")
                     textCoordinates.text = "Erreur JSON"
                 }
             },
             { error ->
-                Log.e("Volley", "Erreur de requête : ${error.networkResponse?.statusCode} - ${error.message}")
+                Log.e("Volley", "Erreur de requÃªte : ${error.networkResponse?.statusCode} - ${error.message}")
                 if (error.networkResponse != null) {
-                    Log.e("Volley", "Réponse serveur : ${String(error.networkResponse.data)}")
+                    Log.e("Volley", "RÃ©ponse serveur : ${String(error.networkResponse.data)}")
                 }
-                Toast.makeText(this, "Problème de récupération des stations essences.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des stations essences.", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
     }
 
+    fun formatStationData(json: String): String {
+        val jsonArray = JSONArray(json)
+        val result = StringBuilder()
+
+        for (i in 0 until jsonArray.length()) {
+            val station = jsonArray.getJSONObject(i)
+
+            val stationName = station.getString("name").trim()
+            val latitude = station.getDouble("latitude")
+            val longitude = station.getDouble("longitude")
+
+            result.append("- $stationName ($latitude - $longitude):\n")
+
+            val energyPrices = station.getJSONArray("energyPrices")
+            if (energyPrices != null) {
+                for (j in 0 until energyPrices.length()) {
+                    val energyObject = energyPrices.getJSONObject(j)
+
+                    val energyName = energyObject.getString("energy")
+                    val price = energyObject.getDouble("value")
+
+                    result.append("    - $energyName: $price euros\n")
+                }
+            }
+            result.append("\n")
+
+        }
+        return result.toString().trim()
+    }
+
     fun getLastKnownLocation(context: Context): List<String> {
-        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        val locationManager = context.getSystemService(LOCATION_SERVICE) as LocationManager
         val providers = locationManager.getProviders(true)
         val gps = DoubleArray(2)
         var location: Location? = null
@@ -218,13 +261,13 @@ class MainActivity : AppCompatActivity() {
         for (provider in providers) {
             location = locationManager.getLastKnownLocation(provider)
             if (location != null) {
-                break // Stop looking for locations if one is found
+                break
             }
         }
 
         if (location != null) {
-            gps[0] = location.latitude
-            gps[1] = location.longitude
+            gps[0] = location.latitude * 100000
+            gps[1] = location.longitude * 100000
             Log.d("getLastKnownLocation", "Latitude: ${gps[0]}, Longitude: ${gps[1]}")
             return listOf(gps[0].toString(), gps[1].toString())
         } else {
