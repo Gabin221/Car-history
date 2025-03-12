@@ -63,6 +63,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var textMean: TextView
 
     private var listeDates = mutableListOf<String>()
+    private var listeDistances = mutableListOf<String>()
+    private var listeVolumes = mutableListOf<String>()
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
@@ -268,6 +270,8 @@ class MainActivity : AppCompatActivity() {
                 try {
                     val date = dateFormat.parse(elements[0]) ?: continue
                     listeDates.add(elements[0])
+                    listeDistances.add(elements[1])
+                    listeVolumes.add(elements[2])
                     val distance = elements[1].toDouble()
                     val volume = elements[2].toDouble()
                     val consommation = volume * 100 / distance
@@ -359,7 +363,7 @@ class MainActivity : AppCompatActivity() {
         series.setOnDataPointTapListener { _, dataPoint ->
             val index = dataPoints.indexOf(dataPoint)
             if (index in listeDates.indices) {
-                afficherPopup(dataPoint as DataPoint, listeDates[index])
+                afficherPopup(dataPoint as DataPoint, listeDates[index], listeDistances[index], listeVolumes[index])
             }
         }
 
@@ -382,11 +386,20 @@ class MainActivity : AppCompatActivity() {
         lineGraphView.addSeries(series)
     }
 
-    private fun afficherPopup(dataPoint: DataPoint, date: String) {
+    private fun afficherPopup(dataPoint: DataPoint, date: String, distance: String, volume: String) {
         val consommation = dataPoint.y
-        // val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(dataPoint.x.toLong()))
-        val message = "Date: $date\nConsommation: ${"%.2f".format(consommation)} L/100km"
+        val message = "Date: $date\nDistance: $distance km\nVolume: $volume L\nConsommation: ${"%.2f".format(consommation)} L/100km"
 
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        val inflater = layoutInflater
+        val layout = inflater.inflate(R.layout.custom_toast, findViewById(R.id.custom_toast_container))
+
+        val textView = layout.findViewById<TextView>(R.id.toast_text)
+        textView.text = message
+
+        with (Toast(this)) {
+            duration = Toast.LENGTH_LONG
+            view = layout
+            show()
+        }
     }
 }
