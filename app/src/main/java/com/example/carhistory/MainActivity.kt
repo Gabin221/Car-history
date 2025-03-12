@@ -32,6 +32,7 @@ import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
 import org.json.JSONArray
 import org.json.JSONException
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
 
@@ -51,14 +52,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var textCoordinates: TextView
     private lateinit var textMean: TextView
     private lateinit var distanceTotalParcourue: TextView
+    private lateinit var recordConso: TextView
+    private lateinit var distanceCarParcourue: TextView
 
     private var listeDates = mutableListOf<String>()
     private var listeDistances = mutableListOf<String>()
     private var listeVolumes = mutableListOf<String>()
+    private var recordConsoValue = 0.0
+    private var currentCarName = ""
+    private var currentCarDist = 0.0
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
-        Pair(R.drawable.car_wrench, "iconMaintenance"),
         Pair(R.drawable.map_search_outline, "buttonSearchGasStation"),
         Pair(R.drawable.plus_circle_outline, "buttonAddPlein")
     )
@@ -85,25 +90,23 @@ class MainActivity : AppCompatActivity() {
         textDistRun = findViewById(R.id.textDistRun)
         buttonSearchGasStation = findViewById(R.id.buttonSearchGasStation)
         textMean = findViewById(R.id.textMean)
-        // distanceTotalParcourue = findViewById(R.id.distanceTotalParcourue)
-
-//        val inflater = this.layoutInflater
-//        val dialogView = inflater.inflate(R.layout.find_gas_stations, null)
-//        textCoordinates = dialogView.findViewById(R.id.textCoordinates)
-//
-//        recupererFindGasStation()
-//
-//        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-//        builder.setView(dialogView)
-//
-//        val dialog: AlertDialog = builder.create()
-//        dialog.show()
 
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
+            val dialogView = inflater.inflate(R.layout.stats_window_modale, null)
+            distanceTotalParcourue = dialogView.findViewById<TextView>(R.id.distanceTotalParcourue)
+            recordConso = dialogView.findViewById<TextView>(R.id.recordConso)
+            distanceCarParcourue = dialogView.findViewById<TextView>(R.id.distanceCarParcourue)
+
+            recupererInfosConducteur(distanceTotalParcourue)
+
+            recordConso.text = "${"%.3f".format(recordConsoValue)} L/100km en record de consommation avec la $currentCarName"
+            distanceCarParcourue.text = "${"%.0f".format(currentCarDist)} km parcourus avec la $currentCarName"
+
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
             builder
-                .setView(inflater.inflate(R.layout.stats_window_modale, null))
+                .setTitle("Statistiques")
+                .setView(dialogView)
 
             val dialog: AlertDialog = builder.create()
             dialog.show()
@@ -200,11 +203,12 @@ class MainActivity : AppCompatActivity() {
                 val titre = parts[0] + " " + parts[1]
                 val imageUrl = parts[2]
                 val dateAchat = parts[3]
-                val distance = parts[4]
-                titrePage.text = titre
+                currentCarDist = parts[4].toDouble()
+                currentCarName = titre
+                titrePage.text = currentCarName
                 buttonCenterCar.text = titre
                 textBuyDate.text = dateAchat
-                textDistRun.text = distance + " km"
+                textDistRun.text = "${"%.0f".format(currentCarDist)} km"
 
                 if (imageUrl.isNotEmpty()) {
                     Glide.with(this)
@@ -278,7 +282,7 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
-    private fun recupererInfosConducteur() {
+    private fun recupererInfosConducteur(distanceTotalParcourue: TextView) {
         val queue = Volley.newRequestQueue(this)
         val url = "use/your/script/recupererInfosConducteur.php"
 
@@ -286,8 +290,18 @@ class MainActivity : AppCompatActivity() {
             Request.Method.GET, url,
             { response ->
                 val parts = response.split(";")
-                val km_totaux = parts[0]
+                val km_totaux = parts[0].toDoubleOrNull() ?: 0.0
+                val date_obtention_permis = parts[1]
+                val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                val datePermis = sdf.parse(date_obtention_permis)
+                val calendar = Calendar.getInstance()
+                val currentYear = calendar.get(Calendar.YEAR)
+                calendar.time = datePermis
+                val yearObtention = calendar.get(Calendar.YEAR)
+                val yearsPassed = maxOf(1, currentYear - yearObtention)
+                val moyenneKmAn = km_totaux / yearsPassed
 
+                distanceTotalParcourue.text = "$km_totaux km parcourus soit environ ${"%.0f".format(moyenneKmAn)} km/an"
             },
             { error ->
                 Log.e("Volley", "Erreur de requÃªte : ${error.message}")
@@ -371,6 +385,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         textMean.text = String.format("%.3f", consommations.average()) + " L/100km"
+        recordConsoValue = consommations.minOrNull() ?: 0.0
 
         return dataPoints
     }

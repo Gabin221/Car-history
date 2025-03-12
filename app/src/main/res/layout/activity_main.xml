@@ -139,10 +139,10 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_marginHorizontal="10dp"
+            android:layout_marginVertical="5dp"
             android:padding="5dp"
             android:background="@drawable/rounded_elements_20"
-            android:backgroundTint="@color/background_color_cards"
-            android:layout_marginBottom="10dp">
+            android:backgroundTint="@color/background_color_cards" >
 
             <com.jjoe64.graphview.GraphView
                 android:id="@+id/lineGraphView"
@@ -209,34 +209,6 @@
                 android:layout_marginLeft="10dp"
                 android:backgroundTint="@color/background_dist_run"
                 android:background="@drawable/rounded_elements_10" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:backgroundTint="@color/background_color_maintenance"
-            android:background="@drawable/rounded_elements_20"
-            android:layout_marginBottom="10dp"
-            android:layout_marginHorizontal="10dp"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:id="@+id/iconMaintenance"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"/>
-
-            <TextView
-                android:id="@+id/buttonMaintenanceIncomming"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Entretiens à venir"
-                android:textSize="20sp"
-                android:textColor="@color/black"
-                android:textAlignment="center" />
 
         </LinearLayout>
 
