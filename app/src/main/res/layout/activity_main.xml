@@ -117,7 +117,6 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.33"
                 android:gravity="center"
-                android:text="7.125 L/100km"
                 android:textSize="13sp"
                 android:textColor="@color/black"
                 android:backgroundTint="@color/background_mean"
@@ -148,7 +147,8 @@
             <com.jjoe64.graphview.GraphView
                 android:id="@+id/lineGraphView"
                 android:layout_width="match_parent"
-                android:layout_height="110dp" />
+                android:layout_height="110dp"
+                android:padding="5dp"/>
 
         </LinearLayout>
 

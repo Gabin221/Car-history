@@ -1,8 +1,11 @@
 ﻿package com.example.carhistory
 
 import android.Manifest
+import android.R.string
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.icu.text.SimpleDateFormat
 import android.location.Location
 import android.location.LocationManager
@@ -11,7 +14,12 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
 import android.util.Log
+import android.view.Gravity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -27,8 +35,11 @@ import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
 import com.jjoe64.graphview.DefaultLabelFormatter
 import com.jjoe64.graphview.GraphView
+import com.jjoe64.graphview.GridLabelRenderer
+import com.jjoe64.graphview.LegendRenderer
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
+import com.jjoe64.graphview.series.PointsGraphSeries
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -49,6 +60,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var textDistRun: TextView
     private lateinit var buttonSearchGasStation: TextView
     private lateinit var textCoordinates: TextView
+    private lateinit var textMean: TextView
+
+    private var listeDates = mutableListOf<String>()
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
@@ -78,18 +92,19 @@ class MainActivity : AppCompatActivity() {
         textBuyDate = findViewById(R.id.textBuyDate)
         textDistRun = findViewById(R.id.textDistRun)
         buttonSearchGasStation = findViewById(R.id.buttonSearchGasStation)
+        textMean = findViewById(R.id.textMean)
 
-        val inflater = this.layoutInflater
-        val dialogView = inflater.inflate(R.layout.find_gas_stations, null)
-        textCoordinates = dialogView.findViewById(R.id.textCoordinates)
-
-        recupererFindGasStation()
-
-        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-        builder.setView(dialogView)
-
-        val dialog: AlertDialog = builder.create()
-        dialog.show()
+//        val inflater = this.layoutInflater
+//        val dialogView = inflater.inflate(R.layout.find_gas_stations, null)
+//        textCoordinates = dialogView.findViewById(R.id.textCoordinates)
+//
+//        recupererFindGasStation()
+//
+//        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+//        builder.setView(dialogView)
+//
+//        val dialog: AlertDialog = builder.create()
+//        dialog.show()
 
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
@@ -244,19 +259,21 @@ class MainActivity : AppCompatActivity() {
 
     private fun traiterDonnees(data: String): List<DataPoint> {
         val dataPoints = mutableListOf<DataPoint>()
-        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE) // Format de tes dates
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE)
+        val consommations = mutableListOf<Double>()
 
         for (valeur in data.split("|")) {
             val elements = valeur.split(";")
             if (elements.size >= 3) {
                 try {
-                    val date = dateFormat.parse(elements[0]) ?: continue // Convertir la date
+                    val date = dateFormat.parse(elements[0]) ?: continue
+                    listeDates.add(elements[0])
                     val distance = elements[1].toDouble()
                     val volume = elements[2].toDouble()
-                    val consommation = volume * 100 / distance // Calcul dÃ©jÃ  fait
+                    val consommation = volume * 100 / distance
+                    consommations.add(consommation)
 
-                    // Convertir la date en timestamp (nombre de jours depuis 1970)
-                    val timestamp = date.time.toDouble() / (1000 * 60 * 60 * 24) // Convertir en jours
+                    val timestamp = date.time.toDouble() / (1000 * 60 * 60 * 24)
 
                     dataPoints.add(DataPoint(timestamp, consommation))
                 } catch (e: Exception) {
@@ -264,6 +281,9 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        textMean.text = String.format("%.3f", consommations.average()) + " L/100km"
+
         return dataPoints
     }
 
@@ -336,18 +356,19 @@ class MainActivity : AppCompatActivity() {
         val series = LineGraphSeries(dataPoints.toTypedArray())
         series.color = resources.getColor(R.color.chart_color, null)
 
-        lineGraphView.gridLabelRenderer.apply {
-            isHorizontalLabelsVisible = true
-            isVerticalLabelsVisible = true
-            verticalLabelsColor = resources.getColor(R.color.white, null)
-            horizontalLabelsColor = resources.getColor(R.color.white, null)
-            labelFormatter = object : DefaultLabelFormatter() {
-                private val dateFormat = SimpleDateFormat("dd/MM", Locale.getDefault())
-
-                override fun formatLabel(value: Double, isValueX: Boolean): String {
-                    return if (isValueX) dateFormat.format(Date(value.toLong())) else super.formatLabel(value, isValueX)
-                }
+        series.setOnDataPointTapListener { _, dataPoint ->
+            val index = dataPoints.indexOf(dataPoint)
+            if (index in listeDates.indices) {
+                afficherPopup(dataPoint as DataPoint, listeDates[index])
             }
+        }
+
+        lineGraphView.gridLabelRenderer.apply {
+            isHorizontalLabelsVisible = false
+            isVerticalLabelsVisible = true
+            gridStyle = GridLabelRenderer.GridStyle.BOTH
+            gridColor = resources.getColor(R.color.white, null)
+            verticalLabelsColor = resources.getColor(R.color.white, null)
         }
 
         lineGraphView.viewport.apply {
@@ -359,5 +380,13 @@ class MainActivity : AppCompatActivity() {
         }
 
         lineGraphView.addSeries(series)
+    }
+
+    private fun afficherPopup(dataPoint: DataPoint, date: String) {
+        val consommation = dataPoint.y
+        // val date = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(dataPoint.x.toLong()))
+        val message = "Date: $date\nConsommation: ${"%.2f".format(consommation)} L/100km"
+
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
