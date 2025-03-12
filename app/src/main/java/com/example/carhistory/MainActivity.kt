@@ -1,8 +1,6 @@
 ﻿package com.example.carhistory
 
 import android.Manifest
-import android.R.string
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -14,19 +12,13 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
 import android.util.Log
-import android.view.Gravity
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.PopupWindow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -34,16 +26,12 @@ import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.bumptech.glide.Glide
-import com.jjoe64.graphview.DefaultLabelFormatter
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.GridLabelRenderer
-import com.jjoe64.graphview.LegendRenderer
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
-import com.jjoe64.graphview.series.PointsGraphSeries
 import org.json.JSONArray
 import org.json.JSONException
-import org.json.JSONObject
 import java.util.Date
 import java.util.Locale
 
@@ -62,6 +50,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var buttonSearchGasStation: TextView
     private lateinit var textCoordinates: TextView
     private lateinit var textMean: TextView
+    private lateinit var distanceTotalParcourue: TextView
 
     private var listeDates = mutableListOf<String>()
     private var listeDistances = mutableListOf<String>()
@@ -96,6 +85,7 @@ class MainActivity : AppCompatActivity() {
         textDistRun = findViewById(R.id.textDistRun)
         buttonSearchGasStation = findViewById(R.id.buttonSearchGasStation)
         textMean = findViewById(R.id.textMean)
+        // distanceTotalParcourue = findViewById(R.id.distanceTotalParcourue)
 
 //        val inflater = this.layoutInflater
 //        val dialogView = inflater.inflate(R.layout.find_gas_stations, null)
@@ -109,36 +99,6 @@ class MainActivity : AppCompatActivity() {
 //        val dialog: AlertDialog = builder.create()
 //        dialog.show()
 
-//        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-//        val inflater = layoutInflater
-//        val dialogView = inflater.inflate(R.layout.formulaire_ajout_plein, null)
-//
-//        builder
-//            .setView(dialogView)
-//            .setPositiveButton("Ajouter") { dialog, which ->
-//                val editTextVolume = dialogView.findViewById<EditText>(R.id.editTextVolume)
-//                val editTextDistance = dialogView.findViewById<EditText>(R.id.editTextDistance)
-//
-//                val volume = editTextVolume.text.toString().toDoubleOrNull() ?: 0.0
-//                val distance = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
-//
-//                ajouterPlein(ValuesManager.currentIDCar, volume, distance)
-//            }
-//            .setNegativeButton("Abandonner") { dialog, which ->
-//                Toast.makeText(this, "Le plein ne sera pas ajoutÃ©.", Toast.LENGTH_SHORT).show()
-//            }
-//
-//        val dialog: AlertDialog = builder.create()
-//
-//        dialog.setOnShowListener {
-//            dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
-//
-//            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
-//            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.RED)
-//        }
-//
-//        dialog.show()
-
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
@@ -150,12 +110,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         buttonLeftCar.setOnClickListener {
-            recupererInfosVoitures(ValuesManager.currentIDCar - 1)
+            startFunctions(ValuesManager.currentIDCar - 1)
             ValuesManager.currentIDCar--
         }
 
         buttonRightCar.setOnClickListener {
-            recupererInfosVoitures(ValuesManager.currentIDCar + 1)
+            startFunctions(ValuesManager.currentIDCar + 1)
             ValuesManager.currentIDCar++
         }
 
@@ -188,6 +148,7 @@ class MainActivity : AppCompatActivity() {
                     val distance = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
 
                     ajouterPlein(ValuesManager.currentIDCar, volume, distance)
+                    modifierDistances(ValuesManager.currentIDCar, distance)
                 }
                 .setNegativeButton("Abandonner") { dialog, which ->
                     Toast.makeText(this, "Le plein ne sera pas ajoutÃ©.", Toast.LENGTH_SHORT).show()
@@ -206,8 +167,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         initLogo()
-        recupererInfosVoitures(ValuesManager.currentIDCar)
-        recupererDonneesGraphe(ValuesManager.currentIDCar)
+        getCurrentCar()
+        startFunctions(ValuesManager.currentIDCar)
     }
 
     fun initLogo() {
@@ -221,6 +182,11 @@ class MainActivity : AppCompatActivity() {
             spannableString.setSpan(imageSpan, 0, 1, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
             textView.text = spannableString
         }
+    }
+
+    private fun startFunctions(valeur_id: Int) {
+        recupererInfosVoitures(valeur_id)
+        recupererDonneesGraphe(valeur_id)
     }
 
     private fun recupererInfosVoitures(valeur_id: Int) {
@@ -291,6 +257,59 @@ class MainActivity : AppCompatActivity() {
                 Log.e("Volley", "Erreur requÃªte : ${error.networkResponse?.statusCode} - ${error.message}")
             }
         )
+
+        queue.add(stringRequest)
+    }
+
+    private fun modifierDistances(valeur_id: Int, distance: Double) {
+        val queue = Volley.newRequestQueue(this)
+        val url = "use/your/script/modifierDistance.php?valeur_id=$valeur_id&distance=$distance"
+
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                Toast.makeText(this, "Les distances ont Ã©tÃ© mises Ã  jour avec succÃ¨s.", Toast.LENGTH_SHORT).show()
+            },
+            { error ->
+                Log.e("Volley", "Erreur de requÃªte : ${error.message}")
+                Toast.makeText(this, "ProblÃ¨me lors de la mise Ã  jour des distances.", Toast.LENGTH_SHORT).show()
+            })
+
+        queue.add(stringRequest)
+    }
+
+    private fun recupererInfosConducteur() {
+        val queue = Volley.newRequestQueue(this)
+        val url = "use/your/script/recupererInfosConducteur.php"
+
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                val parts = response.split(";")
+                val km_totaux = parts[0]
+
+            },
+            { error ->
+                Log.e("Volley", "Erreur de requÃªte : ${error.message}")
+                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos", Toast.LENGTH_SHORT).show()
+            })
+
+        queue.add(stringRequest)
+    }
+
+    private fun getCurrentCar() {
+        val queue = Volley.newRequestQueue(this)
+        val url = "use/your/script/getCurrentCar.php"
+
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                ValuesManager.currentIDCar = response.toInt()
+            },
+            { error ->
+                Log.e("Volley", "Erreur de requÃªte : ${error.message}")
+                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos", Toast.LENGTH_SHORT).show()
+            })
 
         queue.add(stringRequest)
     }
