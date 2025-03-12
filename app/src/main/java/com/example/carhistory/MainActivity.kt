@@ -18,6 +18,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.PopupWindow
 import android.widget.TextView
@@ -108,6 +109,36 @@ class MainActivity : AppCompatActivity() {
 //        val dialog: AlertDialog = builder.create()
 //        dialog.show()
 
+//        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+//        val inflater = layoutInflater
+//        val dialogView = inflater.inflate(R.layout.formulaire_ajout_plein, null)
+//
+//        builder
+//            .setView(dialogView)
+//            .setPositiveButton("Ajouter") { dialog, which ->
+//                val editTextVolume = dialogView.findViewById<EditText>(R.id.editTextVolume)
+//                val editTextDistance = dialogView.findViewById<EditText>(R.id.editTextDistance)
+//
+//                val volume = editTextVolume.text.toString().toDoubleOrNull() ?: 0.0
+//                val distance = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
+//
+//                ajouterPlein(ValuesManager.currentIDCar, volume, distance)
+//            }
+//            .setNegativeButton("Abandonner") { dialog, which ->
+//                Toast.makeText(this, "Le plein ne sera pas ajoutÃ©.", Toast.LENGTH_SHORT).show()
+//            }
+//
+//        val dialog: AlertDialog = builder.create()
+//
+//        dialog.setOnShowListener {
+//            dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
+//
+//            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+//            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.RED)
+//        }
+//
+//        dialog.show()
+
         buttonAccount.setOnClickListener {
             val inflater = this.layoutInflater
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
@@ -144,17 +175,33 @@ class MainActivity : AppCompatActivity() {
 
         buttonAddPlein.setOnClickListener {
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+            val inflater = layoutInflater
+            val dialogView = inflater.inflate(R.layout.formulaire_ajout_plein, null)
+
             builder
-                .setTitle("Ajouter un plein")
-                .setMessage("I am the message")
-                .setPositiveButton("Positive") { dialog, which ->
-                    // Do something.
+                .setView(dialogView)
+                .setPositiveButton("Ajouter") { dialog, which ->
+                    val editTextVolume = dialogView.findViewById<EditText>(R.id.editTextVolume)
+                    val editTextDistance = dialogView.findViewById<EditText>(R.id.editTextDistance)
+
+                    val volume = editTextVolume.text.toString().toDoubleOrNull() ?: 0.0
+                    val distance = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
+
+                    ajouterPlein(ValuesManager.currentIDCar, volume, distance)
                 }
-                .setNegativeButton("Negative") { dialog, which ->
-                    // Do something else.
+                .setNegativeButton("Abandonner") { dialog, which ->
+                    Toast.makeText(this, "Le plein ne sera pas ajoutÃ©.", Toast.LENGTH_SHORT).show()
                 }
 
             val dialog: AlertDialog = builder.create()
+
+            dialog.setOnShowListener {
+                dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
+
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.RED)
+            }
+
             dialog.show()
         }
 
@@ -208,6 +255,46 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
+    private fun ajouterPlein(valeur_id: Int, volume: Double, distance: Double) {
+        val date = getCurrentDate()
+        val queue = Volley.newRequestQueue(this)
+        val url = "use/your/script/ajouterPlein.php?valeur_id=$valeur_id&volume=$volume&distance=$distance&date=$date"
+
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                Toast.makeText(this, "Le plein a Ã©tÃ© ajoutÃ© avec succÃ¨s.", Toast.LENGTH_SHORT).show()
+            },
+            { error ->
+                Log.e("Volley", "Erreur de requÃªte : ${error.message}")
+                Toast.makeText(this, "ProblÃ¨me lors de l'ajout du plein.", Toast.LENGTH_SHORT).show()
+            })
+
+        queue.add(stringRequest)
+    }
+
+    private fun recupererDonneesGraphe(valeur_id: Int) {
+        val url = "use/your/script/recupererPleins.php?valeur_id=$valeur_id"
+
+        val queue = Volley.newRequestQueue(this)
+        val stringRequest = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                try {
+                    val listeDataPoints = traiterDonnees(response)
+                    graphe1(listeDataPoints)
+                } catch (e: Exception) {
+                    Log.e("Volley", "Erreur traitement : ${e.message}")
+                }
+            },
+            { error ->
+                Log.e("Volley", "Erreur requÃªte : ${error.networkResponse?.statusCode} - ${error.message}")
+            }
+        )
+
+        queue.add(stringRequest)
+    }
+
     private fun recupererFindGasStation() {
         val coordonnees = getLastKnownLocation(this)
         val latitude = coordonnees[0]
@@ -233,28 +320,6 @@ class MainActivity : AppCompatActivity() {
                 }
                 Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des stations essences.", Toast.LENGTH_SHORT).show()
             })
-
-        queue.add(stringRequest)
-    }
-
-    private fun recupererDonneesGraphe(valeur_id: Int) {
-        val url = "use/your/script/recupererPleins.php?valeur_id=$valeur_id"
-
-        val queue = Volley.newRequestQueue(this)
-        val stringRequest = StringRequest(
-            Request.Method.GET, url,
-            { response ->
-                try {
-                    val listeDataPoints = traiterDonnees(response)
-                    graphe1(listeDataPoints)
-                } catch (e: Exception) {
-                    Log.e("Volley", "Erreur traitement : ${e.message}")
-                }
-            },
-            { error ->
-                Log.e("Volley", "Erreur requÃªte : ${error.networkResponse?.statusCode} - ${error.message}")
-            }
-        )
 
         queue.add(stringRequest)
     }
@@ -388,7 +453,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun afficherPopup(dataPoint: DataPoint, date: String, distance: String, volume: String) {
         val consommation = dataPoint.y
-        val message = "Date: $date\nDistance: $distance km\nVolume: $volume L\nConsommation: ${"%.2f".format(consommation)} L/100km"
+        val message = "Date: $date\nDistance: $distance km\nVolume: $volume L\nConsommation: ${"%.3f".format(consommation)} L/100km"
 
         val inflater = layoutInflater
         val layout = inflater.inflate(R.layout.custom_toast, findViewById(R.id.custom_toast_container))
@@ -401,5 +466,10 @@ class MainActivity : AppCompatActivity() {
             view = layout
             show()
         }
+    }
+
+    fun getCurrentDate(): String {
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        return dateFormat.format(Date())
     }
 }

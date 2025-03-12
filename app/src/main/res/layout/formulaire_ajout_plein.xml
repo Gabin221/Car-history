@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ajouter un plein"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Volume (L)"
+        android:textColor="@color/white"
+        android:layout_marginBottom="5dp" />
+
+    <EditText
+        android:id="@+id/editTextVolume"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:padding="5dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/text_input_add_plein"
+        android:backgroundTint="@color/background_input_add_plein"
+        android:background="@drawable/rounded_elements_10" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Distance (km)"
+        android:textColor="@color/white"
+        android:layout_marginBottom="5dp" />
+
+    <EditText
+        android:id="@+id/editTextDistance"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="numberDecimal"
+        android:padding="5dp"
+        android:textColor="@color/text_input_add_plein"
+        android:backgroundTint="@color/background_input_add_plein"
+        android:background="@drawable/rounded_elements_10" />
+
+</LinearLayout>
