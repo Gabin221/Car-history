@@ -41,6 +41,7 @@ import org.json.JSONException
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import kotlin.math.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,14 +49,13 @@ class MainActivity : AppCompatActivity() {
     private lateinit var titrePage: TextView
     private lateinit var buttonLeftCar: TextView
     private lateinit var buttonRightCar: TextView
-    private lateinit var buttonCenterCar: TextView
+    private lateinit var buttonCarburantCar: TextView
     private lateinit var buttonAddPlein: TextView
     private lateinit var lineGraphView: GraphView
     private lateinit var imageCar: ImageView
     private lateinit var textBuyDate: TextView
     private lateinit var textDistRun: TextView
     private lateinit var buttonSearchGasStation: TextView
-    private lateinit var textCoordinates: TextView
     private lateinit var textMean: TextView
     private lateinit var distanceTotalParcourue: TextView
     private lateinit var recordConso: TextView
@@ -67,6 +67,10 @@ class MainActivity : AppCompatActivity() {
     private var recordConsoValue = 0.0
     private var currentCarName = ""
     private var currentCarDist = 0.0
+    private var latitudeUtilisateur = 0.0
+    private var longitudeUtilisateur = 0.0
+    private var facteurConversionAngles = 100000
+    private var idMaxCar = 1
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
@@ -88,7 +92,7 @@ class MainActivity : AppCompatActivity() {
         titrePage = findViewById(R.id.titrePage)
         buttonLeftCar = findViewById(R.id.buttonLeftCar)
         buttonRightCar = findViewById(R.id.buttonRightCar)
-        buttonCenterCar = findViewById(R.id.buttonCenterCar)
+        buttonCarburantCar = findViewById(R.id.buttonCarburantCar)
         buttonAddPlein = findViewById(R.id.buttonAddPlein)
         lineGraphView = findViewById(R.id.lineGraphView)
         imageCar = findViewById(R.id.imageCar)
@@ -119,13 +123,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         buttonLeftCar.setOnClickListener {
-            startFunctions(ValuesManager.currentIDCar - 1)
-            ValuesManager.currentIDCar--
+            if (ValuesManager.currentIDCar - 1 > 0) {
+                startFunctions(ValuesManager.currentIDCar - 1)
+                ValuesManager.currentIDCar--
+            }
         }
 
         buttonRightCar.setOnClickListener {
-            startFunctions(ValuesManager.currentIDCar + 1)
-            ValuesManager.currentIDCar++
+            if (ValuesManager.currentIDCar + 1 <= idMaxCar) {
+                startFunctions(ValuesManager.currentIDCar + 1)
+                ValuesManager.currentIDCar++
+            }
         }
 
         buttonSearchGasStation.setOnClickListener {
@@ -222,6 +230,23 @@ class MainActivity : AppCompatActivity() {
     private fun startFunctions(valeur_id: Int) {
         recupererInfosVoitures(valeur_id)
         recupererDonneesGraphe(valeur_id)
+        disabledButtons(valeur_id)
+    }
+
+    private fun disabledButtons(valeur_id: Int) {
+        if (valeur_id == 1) {
+            buttonLeftCar.isEnabled = false
+            buttonLeftCar.alpha = 0.5f
+            buttonRightCar.isEnabled = true
+            buttonRightCar.alpha = 1f
+        }
+
+        if (valeur_id == idMaxCar) {
+            buttonRightCar.isEnabled = false
+            buttonRightCar.alpha = 0.5f
+            buttonLeftCar.isEnabled = true
+            buttonLeftCar.alpha = 1f
+        }
     }
 
     private fun recupererInfosVoitures(valeur_id: Int) {
@@ -238,7 +263,7 @@ class MainActivity : AppCompatActivity() {
                 currentCarDist = parts[4].toDouble()
                 currentCarName = titre
                 titrePage.text = currentCarName
-                buttonCenterCar.text = titre
+                buttonCarburantCar.text = parts[5]
                 textBuyDate.text = dateAchat
                 textDistRun.text = "${"%.0f".format(currentCarDist)} km"
 
@@ -351,6 +376,7 @@ class MainActivity : AppCompatActivity() {
             Request.Method.GET, url,
             { response ->
                 ValuesManager.currentIDCar = response.toInt()
+                idMaxCar = response.toInt()
             },
             { error ->
                 Log.e("Volley", "Erreur de requÃªte : ${error.message}")
@@ -375,7 +401,7 @@ class MainActivity : AppCompatActivity() {
                     val jsonArray = JSONArray(response)
                     afficherResultatRecherche(context, formatStationData(jsonArray.toString()))
                 } catch (e: JSONException) {
-                    Toast.makeText(context, "Erreur JSON", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Erreur JSON: $e", Toast.LENGTH_SHORT).show()
                 }
             },
             { error ->
@@ -470,11 +496,10 @@ class MainActivity : AppCompatActivity() {
             val station = jsonArray.getJSONObject(i)
 
             val stationName = station.getString("name").trim().encodeToUtf8()
-            val compagnyName = station.getString("compagny").trim().encodeToUtf8()
             val latitude = station.getDouble("latitude")
             val longitude = station.getDouble("longitude")
 
-            result.append("* $stationName - $compagnyName ($latitude - $longitude):\n")
+            result.append("* $stationName ($latitude - $longitude):\n")
 
             val energyPrices = station.getJSONArray("energyPrices")
             if (energyPrices != null) {
@@ -517,9 +542,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (location != null) {
-            gps[0] = location.latitude * 100000
-            gps[1] = location.longitude * 100000
+            gps[0] = location.latitude * facteurConversionAngles
+            gps[1] = location.longitude * facteurConversionAngles
             Log.d("getLastKnownLocation", "Latitude: ${gps[0]}, Longitude: ${gps[1]}")
+            latitudeUtilisateur = gps[0]
+            longitudeUtilisateur = gps[1]
             return listOf(gps[0].toString(), gps[1].toString())
         } else {
             Log.e("getLastKnownLocation", "Could not get the location.")
@@ -552,6 +579,9 @@ class MainActivity : AppCompatActivity() {
             isScrollable = true
             setMinX(dataPoints.first().x)
             setMaxX(dataPoints.last().x)
+            isYAxisBoundsManual = true
+            setMinY(0.85 * dataPoints.first().y)
+            setMaxY(1.15 * dataPoints.last().y)
         }
 
         lineGraphView.addSeries(series)
@@ -594,18 +624,31 @@ class MainActivity : AppCompatActivity() {
         val lines = json.split("\n")
 
         var currentStation: Station? = null
+        var currentCarburant: String? = null
+
         for (line in lines) {
             val stationMatch = regexStation.find(line)
             val prixMatch = regexPrix.find(line)
 
             if (stationMatch != null) {
                 val nom = stationMatch.groupValues[1]
-                val distance = stationMatch.groupValues[2].toDouble() / 1000
+                val latStation = stationMatch.groupValues[2].toDouble() / facteurConversionAngles
+                val lonStation = stationMatch.groupValues[3].toDouble() / facteurConversionAngles
+
+                val distance = round(calculerDistance(latitudeUtilisateur / facteurConversionAngles, longitudeUtilisateur / facteurConversionAngles, latStation, lonStation) * 100) / 100
+
                 currentStation = Station(nom, distance, 0.0)
             } else if (prixMatch != null && currentStation != null) {
+                currentCarburant = prixMatch.groupValues[1]
                 val prix = prixMatch.groupValues[2].toDouble()
-                currentStation = currentStation.copy(prix = prix)
-                stations.add(currentStation)
+
+                val stationAvecCarburant = currentStation.copy(
+                    nom = "[$currentCarburant] ${currentStation.nom}",
+                    prix = prix
+                )
+                if (!stationAvecCarburant.nom.contains("null")) {
+                    stations.add(stationAvecCarburant)
+                }
             }
         }
 
@@ -613,7 +656,21 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateResultText(textView: TextView, stations: List<Station>) {
-        val resultText = stations.joinToString("\n") { "${it.nom} - ${it.distance} km - ${it.prix}â‚¬" }
+        val resultText = stations.joinToString("\n") { "* ${it.nom} - ${it.distance} km - ${it.prix}â‚¬\n" }
         textView.text = resultText
+    }
+
+    fun calculerDistance(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val R = 6371e3
+        val phi1 = Math.toRadians(lat1)
+        val phi2 = Math.toRadians(lat2)
+        val deltaphi = Math.toRadians(lat2 - lat1)
+        val deltalambda = Math.toRadians(lon2 - lon1)
+
+        val a = sin(deltaphi / 2) * sin(deltaphi / 2) +
+                cos(phi1) * cos(phi2) * sin(deltalambda / 2) * sin(deltalambda / 2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        return R * c / 1000
     }
 }
