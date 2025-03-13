@@ -14,6 +14,7 @@ import android.text.style.ImageSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -384,9 +385,11 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
-    private fun afficherResultatRecherche(context: Context, resultat: String) {
+    private fun afficherResultatRecherche(context: Context, resultatJson: String) {
         val builder = AlertDialog.Builder(context)
         builder.setTitle("RÃ©sultats de la recherche")
+
+        val stations = parseJsonToStations(resultatJson)
 
         val scrollView = ScrollView(context)
         val layout = LinearLayout(context)
@@ -394,13 +397,32 @@ class MainActivity : AppCompatActivity() {
         layout.setPadding(20, 20, 20, 20)
 
         val textView = TextView(context)
-        textView.text = resultat
+        updateResultText(textView, stations)
 
+        val btnSortDistance = Button(context).apply {
+            text = "Trier par Distance"
+            setOnClickListener {
+                stations.sortBy { it.distance }
+                updateResultText(textView, stations)
+                textView.invalidate()
+            }
+        }
+
+        val btnSortPrice = Button(context).apply {
+            text = "Trier par Prix"
+            setOnClickListener {
+                stations.sortBy { it.prix }
+                updateResultText(textView, stations)
+                textView.invalidate()
+            }
+        }
+
+        layout.addView(btnSortDistance)
+        layout.addView(btnSortPrice)
         layout.addView(textView)
         scrollView.addView(layout)
 
         builder.setView(scrollView)
-
         builder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
 
         val dialog: AlertDialog = builder.create()
@@ -555,5 +577,43 @@ class MainActivity : AppCompatActivity() {
     fun getCurrentDate(): String {
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         return dateFormat.format(Date())
+    }
+
+    data class Station(
+        val nom: String,
+        val distance: Double,
+        val prix: Double
+    )
+
+    fun parseJsonToStations(json: String): MutableList<Station> {
+        val stations = mutableListOf<Station>()
+
+        val regexStation = """\* (.+?) \((\d+\.\d+) - (\d+\.\d+)\):""".toRegex()
+        val regexPrix = """- (.+?): (\d+\.\d+) euros""".toRegex()
+
+        val lines = json.split("\n")
+
+        var currentStation: Station? = null
+        for (line in lines) {
+            val stationMatch = regexStation.find(line)
+            val prixMatch = regexPrix.find(line)
+
+            if (stationMatch != null) {
+                val nom = stationMatch.groupValues[1]
+                val distance = stationMatch.groupValues[2].toDouble() / 1000
+                currentStation = Station(nom, distance, 0.0)
+            } else if (prixMatch != null && currentStation != null) {
+                val prix = prixMatch.groupValues[2].toDouble()
+                currentStation = currentStation.copy(prix = prix)
+                stations.add(currentStation)
+            }
+        }
+
+        return stations
+    }
+
+    private fun updateResultText(textView: TextView, stations: List<Station>) {
+        val resultText = stations.joinToString("\n") { "${it.nom} - ${it.distance} km - ${it.prix}â‚¬" }
+        textView.text = resultText
     }
 }
