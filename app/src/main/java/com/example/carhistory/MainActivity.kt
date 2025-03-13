@@ -12,8 +12,13 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ImageSpan
 import android.util.Log
+import android.view.LayoutInflater
+import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.ListView
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -123,14 +128,40 @@ class MainActivity : AppCompatActivity() {
         }
 
         buttonSearchGasStation.setOnClickListener {
-            val inflater = this.layoutInflater
-            val dialogView = inflater.inflate(R.layout.find_gas_stations, null)
-            textCoordinates = dialogView.findViewById(R.id.textCoordinates)
+            val builder = AlertDialog.Builder(this)
+            val inflater = LayoutInflater.from(this)
+            val dialogView = inflater.inflate(R.layout.formulaire_find_station, null)
 
-            recupererFindGasStation()
+            val editTextDistance = dialogView.findViewById<EditText>(R.id.editTextDistance)
+            val listViewCarburants = dialogView.findViewById<ListView>(R.id.listViewCarburants)
 
-            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-            builder.setView(dialogView)
+            val carburants = listOf("B7", "SP95-E5", "SP95-E10", "SP98-E5", "E85", "LPG")
+            val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_multiple_choice, carburants)
+            listViewCarburants.adapter = adapter
+            listViewCarburants.choiceMode = ListView.CHOICE_MODE_MULTIPLE
+
+            builder
+                .setView(dialogView)
+                .setPositiveButton("Rechercher") { _, _ ->
+                    val distanceKm = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
+                    val distanceMetres = (distanceKm * 1000).toInt()
+
+                    val selectedCarburants = mutableListOf<String>()
+                    for (i in 0 until listViewCarburants.count) {
+                        if (listViewCarburants.isItemChecked(i)) {
+                            selectedCarburants.add(carburants[i])
+                        }
+                    }
+
+                    if (selectedCarburants.isEmpty()) {
+                        Toast.makeText(this, "Veuillez sÃ©lectionner au moins un carburant", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val carburantsQuery = selectedCarburants.joinToString(",")
+
+                        recupererFindGasStation(this, distanceMetres, carburantsQuery)
+                    }
+                }
+                .setNegativeButton("Annuler") { dialog, _ -> dialog.dismiss() }
 
             val dialog: AlertDialog = builder.create()
             dialog.show()
@@ -328,33 +359,52 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
-    private fun recupererFindGasStation() {
-        val coordonnees = getLastKnownLocation(this)
+    private fun recupererFindGasStation(context: Context, distanceMetres: Int, carburants: String) {
+        val coordonnees = getLastKnownLocation(context)
         val latitude = coordonnees[0]
         val longitude = coordonnees[1]
-        val queue = Volley.newRequestQueue(this)
-        val url = "https://www.comparateur-prix-carburants.fr/comparateur-station-service/search/maps/all?latitude=$latitude&longitude=$longitude&distanceKm=20000&shortage=N&energies=SP95-E5,SP95-E10&services=&compagnies="
+        val queue = Volley.newRequestQueue(context)
+        val url = "https://www.comparateur-prix-carburants.fr/comparateur-station-service/search/maps/all" +
+                "?latitude=$latitude&longitude=$longitude&distanceKm=$distanceMetres&shortage=N&energies=$carburants&services=&compagnies="
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
             { response ->
                 try {
                     val jsonArray = JSONArray(response)
-                    textCoordinates.text = formatStationData(jsonArray.toString())
+                    afficherResultatRecherche(context, formatStationData(jsonArray.toString()))
                 } catch (e: JSONException) {
-                    Log.e("Volley", "Erreur JSON : ${e.message}")
-                    textCoordinates.text = "Erreur JSON"
+                    Toast.makeText(context, "Erreur JSON", Toast.LENGTH_SHORT).show()
                 }
             },
             { error ->
-                Log.e("Volley", "Erreur de requÃªte : ${error.networkResponse?.statusCode} - ${error.message}")
-                if (error.networkResponse != null) {
-                    Log.e("Volley", "RÃ©ponse serveur : ${String(error.networkResponse.data)}")
-                }
-                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des stations essences.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Erreur de requÃªte : ${error.message}", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
+    }
+
+    private fun afficherResultatRecherche(context: Context, resultat: String) {
+        val builder = AlertDialog.Builder(context)
+        builder.setTitle("RÃ©sultats de la recherche")
+
+        val scrollView = ScrollView(context)
+        val layout = LinearLayout(context)
+        layout.orientation = LinearLayout.VERTICAL
+        layout.setPadding(20, 20, 20, 20)
+
+        val textView = TextView(context)
+        textView.text = resultat
+
+        layout.addView(textView)
+        scrollView.addView(layout)
+
+        builder.setView(scrollView)
+
+        builder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+
+        val dialog: AlertDialog = builder.create()
+        dialog.show()
     }
 
     private fun traiterDonnees(data: String): List<DataPoint> {
