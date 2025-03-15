@@ -17,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.CheckedTextView
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -146,16 +147,14 @@ class MainActivity : AppCompatActivity() {
             val editTextDistance = dialogView.findViewById<EditText>(R.id.editTextDistance)
             val listViewCarburants = dialogView.findViewById<ListView>(R.id.listViewCarburants)
 
-            val carburants = listOf("B7", "SP95-E5", "SP95-E10", "SP98-E5", "E85", "LPG")
-
-            val adapter = object : ArrayAdapter<String>(this, android.R.layout.simple_list_item_multiple_choice, carburants) {
-                override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-                    val view = super.getView(position, convertView, parent) as TextView
-                    view.setTextColor(ContextCompat.getColor(context, R.color.white))
-                    return view
-                }
+            listViewCarburants.setOnItemClickListener { parent, view, position, id ->
+                val checkedTextView = view.findViewById<CheckedTextView>(R.id.checkedTextView)
+                checkedTextView.toggle()
             }
 
+            val carburants = listOf("B7", "SP95-E5", "SP95-E10", "SP98-E5", "E85", "LPG")
+
+            val adapter = ArrayAdapter(this, R.layout.item_carburant, R.id.checkedTextView, carburants)
             listViewCarburants.adapter = adapter
             listViewCarburants.choiceMode = ListView.CHOICE_MODE_MULTIPLE
 
@@ -176,7 +175,8 @@ class MainActivity : AppCompatActivity() {
 
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-                val isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+                val isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                        locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
                 if (!isLocationEnabled) {
                     Toast.makeText(this, "La localisation est dÃ©sactivÃ©e. Veuillez l'activer.", Toast.LENGTH_LONG).show()

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
@@ -43,6 +42,7 @@
             android:id="@+id/imageCar"
             android:layout_width="match_parent"
             android:layout_height="200dp"
+            android:contentDescription="@string/legende_image_presentation_voiture"
             android:scaleType="centerCrop"
             android:gravity="center"/>
 
@@ -96,7 +96,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.33"
                 android:gravity="center"
-                android:text="stations"
+                android:text="@string/texte_recherche_station_button"
                 android:textColor="@color/text_color_grey"
                 android:textSize="13sp" />
 
@@ -105,7 +105,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.33"
                 android:gravity="center"
-                android:text="moyenne"
+                android:text="@string/texte_recherche_moyenne_button"
                 android:textColor="@color/text_color_grey"
                 android:textSize="13sp" />
 
@@ -114,7 +114,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.33"
                 android:gravity="center"
-                android:text="nouveau"
+                android:text="@string/texte_recherche_nouveau_button"
                 android:textColor="@color/text_color_grey"
                 android:textSize="13sp" />
 
@@ -134,7 +134,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.33"
                 android:gravity="center"
-                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:backgroundTint="@color/background_search_gas_station"
                 android:background="@drawable/rounded_elements_10" />
 
@@ -155,7 +155,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.33"
                 android:gravity="center"
-                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
                 android:backgroundTint="@color/background_new"
                 android:background="@drawable/rounded_elements_10" />
 
@@ -192,20 +192,20 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.5"
                 android:gravity="center"
-                android:text="achat"
+                android:text="@string/texte_recherche_achat_button"
                 android:textColor="@color/text_color_grey"
                 android:textSize="13sp"
-                android:layout_marginRight="10dp" />
+                android:layout_marginEnd="10dp" />
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="0.5"
                 android:gravity="center"
-                android:text="dist. parcourue"
+                android:text="@string/texte_recherche_distance_parcourue_button"
                 android:textColor="@color/text_color_grey"
                 android:textSize="13sp"
-                android:layout_marginLeft="10dp" />
+                android:layout_marginStart="10dp" />
 
         </LinearLayout>
 
@@ -223,7 +223,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.5"
                 android:gravity="center"
-                android:layout_marginRight="10dp"
+                android:layout_marginEnd="10dp"
                 android:backgroundTint="@color/background_buy_date"
                 android:background="@drawable/rounded_elements_10" />
 
@@ -233,7 +233,7 @@
                 android:layout_height="match_parent"
                 android:layout_weight="0.5"
                 android:gravity="center"
-                android:layout_marginLeft="10dp"
+                android:layout_marginStart="10dp"
                 android:backgroundTint="@color/background_dist_run"
                 android:background="@drawable/rounded_elements_10" />
 

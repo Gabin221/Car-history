@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -9,7 +10,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Trouver une station"
+        android:text="@string/titre_trouver_une_station"
         android:textColor="@color/white"
         android:textStyle="bold"
         android:textSize="20sp"
@@ -18,7 +19,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Distance en km :"
+        android:text="@string/titre_filtre_distance_en_km"
         android:textColor="@color/white"
         android:layout_marginBottom="5dp" />
 
@@ -26,18 +27,20 @@
         android:id="@+id/editTextDistance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:autofillHints="Ex: 30 (pour 30 km)"
         android:inputType="numberDecimal"
         android:padding="5dp"
         android:layout_marginBottom="10dp"
         android:textColor="@color/text_input_add_plein"
         android:backgroundTint="@color/background_input_add_plein"
         android:background="@drawable/rounded_elements_10"
-        android:text="@string/default_distance_search" />
+        android:text="@string/default_distance_search"
+        tools:ignore="LabelFor" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Sélectionnez les carburants :"
+        android:text="@string/titre_texte_recherche_selectionnez_les_carburants"
         android:textColor="@color/white"
         android:layout_marginBottom="5dp" />
 

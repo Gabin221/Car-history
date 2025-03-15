@@ -1,4 +1,13 @@
 <resources>
     <string name="app_name">Car history</string>
     <string name="default_distance_search">20</string>
+    <string name="legende_image_presentation_voiture">Image de la voiture actuelle.</string>
+    <string name="texte_recherche_station_button">stations</string>
+    <string name="texte_recherche_moyenne_button">moyenne</string>
+    <string name="texte_recherche_nouveau_button">nouveau</string>
+    <string name="texte_recherche_achat_button">achat</string>
+    <string name="texte_recherche_distance_parcourue_button">dist. parcourue</string>
+    <string name="titre_trouver_une_station">Trouver une station</string>
+    <string name="titre_filtre_distance_en_km">Distance en km :</string>
+    <string name="titre_texte_recherche_selectionnez_les_carburants">Sélectionnez les carburants :</string>
 </resources>

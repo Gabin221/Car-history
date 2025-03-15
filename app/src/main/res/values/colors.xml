@@ -21,4 +21,5 @@
     <color name="background_input_add_plein">#424242</color>
     <color name="background_card_add_plein">#000000</color>
     <color name="text_input_add_plein">#D9D9D9</color>
+    <color name="input_checked">#00A000</color>
 </resources>
