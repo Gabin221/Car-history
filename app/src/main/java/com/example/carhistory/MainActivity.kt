@@ -1,6 +1,7 @@
 ﻿package com.example.carhistory
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Color
@@ -81,6 +82,7 @@ class MainActivity : AppCompatActivity() {
         Pair(R.drawable.plus_circle_outline, "buttonAddPlein")
     )
 
+    @SuppressLint("SetTextI18n")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -118,10 +120,14 @@ class MainActivity : AppCompatActivity() {
 
             val builder: AlertDialog.Builder = AlertDialog.Builder(this)
             builder
-                .setTitle("Statistiques")
                 .setView(dialogView)
 
             val dialog: AlertDialog = builder.create()
+
+            dialog.setOnShowListener {
+                dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
+            }
+
             dialog.show()
         }
 

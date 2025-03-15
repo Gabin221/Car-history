@@ -10,4 +10,8 @@
     <string name="titre_trouver_une_station">Trouver une station</string>
     <string name="titre_filtre_distance_en_km">Distance en km :</string>
     <string name="titre_texte_recherche_selectionnez_les_carburants">Sélectionnez les carburants :</string>
+    <string name="titre_statistiques">Statistiques</string>
+    <string name="titre_ajouter_un_plein">Ajouter un plein</string>
+    <string name="titre_volume">Volume (L)</string>
+    <string name="titre_distance">Distance (km)</string>
 </resources>
