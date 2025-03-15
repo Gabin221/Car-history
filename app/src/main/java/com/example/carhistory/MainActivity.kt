@@ -4,15 +4,19 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
 import android.graphics.Color
 import android.icu.text.SimpleDateFormat
 import android.location.Location
 import android.location.LocationManager
 import android.os.Bundle
+import android.text.Spannable
 import android.text.SpannableString
 import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.text.style.ImageSpan
 import android.util.Log
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -444,22 +448,35 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun afficherResultatRecherche(context: Context, resultatJson: String) {
         val builder = AlertDialog.Builder(context)
-        builder.setTitle("RÃ©sultats de la recherche")
+
+        val title = SpannableString("RÃ©sultats de la recherche")
+        title.setSpan(ForegroundColorSpan(Color.WHITE), 0, title.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        builder.setTitle(title)
 
         val stations = parseJsonToStations(resultatJson)
 
         val scrollView = ScrollView(context)
-        val layout = LinearLayout(context)
-        layout.orientation = LinearLayout.VERTICAL
-        layout.setPadding(20, 20, 20, 20)
+        val layout = LinearLayout(context).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(20, 20, 20, 20)
+        }
 
         val textView = TextView(context)
         updateResultText(textView, stations)
 
-        val btnSortDistance = Button(context).apply {
-            text = "Trier par Distance"
+        val sortLayout = LinearLayout(context).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, 10, 0, 10)
+        }
+
+        val txtSortDistance = TextView(context).apply {
+            text = "Tri par \uD83D\uDCCF"
+            setTextColor(Color.LTGRAY)
+            textSize = 16f
+            setPadding(0, 0, 0, 0)
             setOnClickListener {
                 stations.sortBy { it.distance }
                 updateResultText(textView, stations)
@@ -467,8 +484,11 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        val btnSortPrice = Button(context).apply {
-            text = "Trier par Prix"
+        val txtSortPrice = TextView(context).apply {
+            text = "Tri par ðŸ’°"
+            setTextColor(Color.LTGRAY)
+            textSize = 16f
+            setPadding(60, 0, 0, 0)
             setOnClickListener {
                 stations.sortBy { it.prix }
                 updateResultText(textView, stations)
@@ -476,15 +496,24 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        layout.addView(btnSortDistance)
-        layout.addView(btnSortPrice)
+        sortLayout.addView(txtSortDistance)
+        sortLayout.addView(txtSortPrice)
+
+        layout.addView(sortLayout)
         layout.addView(textView)
+        textView.setTextColor(Color.WHITE)
         scrollView.addView(layout)
 
         builder.setView(scrollView)
         builder.setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
 
         val dialog: AlertDialog = builder.create()
+
+        dialog.setOnShowListener {
+            dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+        }
+
         dialog.show()
     }
 
