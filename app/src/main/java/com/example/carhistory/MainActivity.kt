@@ -149,31 +149,41 @@ class MainActivity : AppCompatActivity() {
             listViewCarburants.adapter = adapter
             listViewCarburants.choiceMode = ListView.CHOICE_MODE_MULTIPLE
 
-            builder
-                .setView(dialogView)
-                .setPositiveButton("Rechercher") { _, _ ->
-                    val distanceKm = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
-                    val distanceMetres = (distanceKm * 1000).toInt()
-
-                    val selectedCarburants = mutableListOf<String>()
-                    for (i in 0 until listViewCarburants.count) {
-                        if (listViewCarburants.isItemChecked(i)) {
-                            selectedCarburants.add(carburants[i])
-                        }
-                    }
-
-                    if (selectedCarburants.isEmpty()) {
-                        Toast.makeText(this, "Veuillez sÃ©lectionner au moins un carburant", Toast.LENGTH_SHORT).show()
-                    } else {
-                        val carburantsQuery = selectedCarburants.joinToString(",")
-
-                        recupererFindGasStation(this, distanceMetres, carburantsQuery)
-                    }
-                }
+            builder.setView(dialogView)
+                .setPositiveButton("Rechercher", null)
                 .setNegativeButton("Annuler") { dialog, _ -> dialog.dismiss() }
 
             val dialog: AlertDialog = builder.create()
             dialog.show()
+
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+                val isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                        locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+
+                if (!isLocationEnabled) {
+                    Toast.makeText(this, "La localisation est dÃ©sactivÃ©e. Veuillez l'activer.", Toast.LENGTH_LONG).show()
+                    return@setOnClickListener
+                }
+
+                val distanceKm = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
+                val distanceMetres = (distanceKm * 1000).toInt()
+
+                val selectedCarburants = mutableListOf<String>()
+                for (i in 0 until listViewCarburants.count) {
+                    if (listViewCarburants.isItemChecked(i)) {
+                        selectedCarburants.add(carburants[i])
+                    }
+                }
+
+                if (selectedCarburants.isEmpty()) {
+                    Toast.makeText(this, "Veuillez sÃ©lectionner au moins un carburant", Toast.LENGTH_SHORT).show()
+                } else {
+                    val carburantsQuery = selectedCarburants.joinToString(",")
+                    recupererFindGasStation(this, distanceMetres, carburantsQuery)
+                    dialog.dismiss()
+                }
+            }
         }
 
         buttonAddPlein.setOnClickListener {
