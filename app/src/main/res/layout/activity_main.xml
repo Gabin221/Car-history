@@ -69,8 +69,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:enabled="false"
-                android:alpha="0.5"
                 android:background="@drawable/menu_right_outline" />
         </LinearLayout>
 
@@ -240,6 +238,14 @@
         </LinearLayout>
 
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/text_title_carburant"
+            android:textAlignment="center"
+            android:textColor="@color/text_color_grey"
+            android:textSize="13sp" />
+
+        <TextView
             android:id="@+id/buttonCarburantCar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -247,8 +253,8 @@
             android:paddingVertical="5dp"
             android:layout_gravity="center"
             android:textSize="20sp"
-            android:textColor="@color/white"
-            android:backgroundTint="@color/black"
+            android:textColor="@color/black"
+            android:backgroundTint="@color/background_carburant"
             android:textAlignment="center"
             android:background="@drawable/rounded_elements_20" />
     </LinearLayout>

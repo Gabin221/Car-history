@@ -14,4 +14,5 @@
     <string name="titre_ajouter_un_plein">Ajouter un plein</string>
     <string name="titre_volume">Volume (L)</string>
     <string name="titre_distance">Distance (km)</string>
+    <string name="text_title_carburant">carburant</string>
 </resources>

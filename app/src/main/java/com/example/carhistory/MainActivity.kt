@@ -4,7 +4,6 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.icu.text.SimpleDateFormat
 import android.location.Location
@@ -16,12 +15,8 @@ import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.ImageSpan
 import android.util.Log
-import android.view.Gravity
 import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.CheckedTextView
 import android.widget.EditText
 import android.widget.ImageView
@@ -78,7 +73,9 @@ class MainActivity : AppCompatActivity() {
     private var latitudeUtilisateur = 0.0
     private var longitudeUtilisateur = 0.0
     private var facteurConversionAngles = 100000
+    private var idCurrentCar = 1
     private var idMaxCar = 1
+    private var idMinCar = 1
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
@@ -110,145 +107,153 @@ class MainActivity : AppCompatActivity() {
         buttonSearchGasStation = findViewById(R.id.buttonSearchGasStation)
         textMean = findViewById(R.id.textMean)
 
-        buttonAccount.setOnClickListener {
-            val inflater = this.layoutInflater
-            val dialogView = inflater.inflate(R.layout.stats_window_modale, null)
-            distanceTotalParcourue = dialogView.findViewById<TextView>(R.id.distanceTotalParcourue)
-            recordConso = dialogView.findViewById<TextView>(R.id.recordConso)
-            distanceCarParcourue = dialogView.findViewById<TextView>(R.id.distanceCarParcourue)
+        getCurrentCar { carId ->
+            idMaxCar = carId
+            idCurrentCar = carId
+            
+            buttonAccount.setOnClickListener {
+                val inflater = this.layoutInflater
+                val dialogView = inflater.inflate(R.layout.stats_window_modale, null)
+                distanceTotalParcourue = dialogView.findViewById<TextView>(R.id.distanceTotalParcourue)
+                recordConso = dialogView.findViewById<TextView>(R.id.recordConso)
+                distanceCarParcourue = dialogView.findViewById<TextView>(R.id.distanceCarParcourue)
 
-            recupererInfosConducteur(distanceTotalParcourue)
+                recupererInfosConducteur(distanceTotalParcourue)
 
-            recordConso.text = "${"%.3f".format(recordConsoValue)} L/100km en record de consommation avec la $currentCarName"
-            distanceCarParcourue.text = "${"%.0f".format(currentCarDist)} km parcourus avec la $currentCarName"
+                recordConso.text = "${"%.3f".format(recordConsoValue)} L/100km en record de consommation avec la $currentCarName"
+                distanceCarParcourue.text = "${"%.0f".format(currentCarDist)} km parcourus avec la $currentCarName"
 
-            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-            builder
-                .setView(dialogView)
+                val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+                builder
+                    .setView(dialogView)
 
-            val dialog: AlertDialog = builder.create()
+                val dialog: AlertDialog = builder.create()
 
-            dialog.setOnShowListener {
-                dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
-            }
-
-            dialog.show()
-        }
-
-        buttonLeftCar.setOnClickListener {
-            if (ValuesManager.currentIDCar - 1 > 0) {
-                startFunctions(ValuesManager.currentIDCar - 1)
-                ValuesManager.currentIDCar--
-            }
-        }
-
-        buttonRightCar.setOnClickListener {
-            if (ValuesManager.currentIDCar + 1 <= idMaxCar) {
-                startFunctions(ValuesManager.currentIDCar + 1)
-                ValuesManager.currentIDCar++
-            }
-        }
-
-        buttonSearchGasStation.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            val inflater = LayoutInflater.from(this)
-            val dialogView = inflater.inflate(R.layout.formulaire_find_station, null)
-
-            val editTextDistance = dialogView.findViewById<EditText>(R.id.editTextDistance)
-            val listViewCarburants = dialogView.findViewById<ListView>(R.id.listViewCarburants)
-
-            listViewCarburants.setOnItemClickListener { parent, view, position, id ->
-                val checkedTextView = view.findViewById<CheckedTextView>(R.id.checkedTextView)
-                checkedTextView.toggle()
-            }
-
-            val carburants = listOf("B7", "SP95-E5", "SP95-E10", "SP98-E5", "E85", "LPG")
-
-            val adapter = ArrayAdapter(this, R.layout.item_carburant, R.id.checkedTextView, carburants)
-            listViewCarburants.adapter = adapter
-            listViewCarburants.choiceMode = ListView.CHOICE_MODE_MULTIPLE
-
-            builder.setView(dialogView)
-                .setPositiveButton("Rechercher", null)
-                .setNegativeButton("Annuler") { dialog, _ -> dialog.dismiss() }
-
-            val dialog: AlertDialog = builder.create()
-
-            dialog.setOnShowListener {
-                dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
-
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
-                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.RED)
-            }
-
-            dialog.show()
-
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-                val isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                        locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-
-                if (!isLocationEnabled) {
-                    Toast.makeText(this, "La localisation est dÃ©sactivÃ©e. Veuillez l'activer.", Toast.LENGTH_LONG).show()
-                    return@setOnClickListener
+                dialog.setOnShowListener {
+                    dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
                 }
 
-                val distanceKm = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
-                val distanceMetres = (distanceKm * 1000).toInt()
+                dialog.show()
+            }
 
-                val selectedCarburants = mutableListOf<String>()
-                for (i in 0 until listViewCarburants.count) {
-                    if (listViewCarburants.isItemChecked(i)) {
-                        selectedCarburants.add(carburants[i])
+            buttonLeftCar.setOnClickListener {
+                if (idCurrentCar > idMinCar) {
+                    idCurrentCar--
+                    startFunctions(idCurrentCar)
+                } else {
+                    Toast.makeText(this, "Aucune voiture avant la $currentCarName", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            buttonRightCar.setOnClickListener {
+                if (idCurrentCar < idMaxCar) {
+                    idCurrentCar++
+                    startFunctions(idCurrentCar)
+                } else {
+                    Toast.makeText(this, "Aucune voiture aprÃ¨s la $currentCarName", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+            buttonSearchGasStation.setOnClickListener {
+                val builder = AlertDialog.Builder(this)
+                val inflater = LayoutInflater.from(this)
+                val dialogView = inflater.inflate(R.layout.formulaire_find_station, null)
+
+                val editTextDistance = dialogView.findViewById<EditText>(R.id.editTextDistance)
+                val listViewCarburants = dialogView.findViewById<ListView>(R.id.listViewCarburants)
+
+                listViewCarburants.setOnItemClickListener { parent, view, position, id ->
+                    val checkedTextView = view.findViewById<CheckedTextView>(R.id.checkedTextView)
+                    checkedTextView.toggle()
+                }
+
+                val carburants = listOf("B7", "SP95-E5", "SP95-E10", "SP98-E5", "E85", "LPG")
+
+                val adapter = ArrayAdapter(this, R.layout.item_carburant, R.id.checkedTextView, carburants)
+                listViewCarburants.adapter = adapter
+                listViewCarburants.choiceMode = ListView.CHOICE_MODE_MULTIPLE
+
+                builder.setView(dialogView)
+                    .setPositiveButton("Rechercher", null)
+                    .setNegativeButton("Annuler") { dialog, _ -> dialog.dismiss() }
+
+                val dialog: AlertDialog = builder.create()
+
+                dialog.setOnShowListener {
+                    dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
+
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.RED)
+                }
+
+                dialog.show()
+
+                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    val locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
+                    val isLocationEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                            locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+
+                    if (!isLocationEnabled) {
+                        Toast.makeText(this, "La localisation est dÃ©sactivÃ©e. Veuillez l'activer.", Toast.LENGTH_LONG).show()
+                        return@setOnClickListener
+                    }
+
+                    val distanceKm = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
+                    val distanceMetres = (distanceKm * 1000).toInt()
+
+                    val selectedCarburants = mutableListOf<String>()
+                    for (i in 0 until listViewCarburants.count) {
+                        if (listViewCarburants.isItemChecked(i)) {
+                            selectedCarburants.add(carburants[i])
+                        }
+                    }
+
+                    if (selectedCarburants.isEmpty()) {
+                        Toast.makeText(this, "Veuillez sÃ©lectionner au moins un carburant", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val carburantsQuery = selectedCarburants.joinToString(",")
+                        recupererFindGasStation(this, distanceMetres, carburantsQuery)
+                        dialog.dismiss()
                     }
                 }
-
-                if (selectedCarburants.isEmpty()) {
-                    Toast.makeText(this, "Veuillez sÃ©lectionner au moins un carburant", Toast.LENGTH_SHORT).show()
-                } else {
-                    val carburantsQuery = selectedCarburants.joinToString(",")
-                    recupererFindGasStation(this, distanceMetres, carburantsQuery)
-                    dialog.dismiss()
-                }
-            }
-        }
-
-        buttonAddPlein.setOnClickListener {
-            val builder: AlertDialog.Builder = AlertDialog.Builder(this)
-            val inflater = layoutInflater
-            val dialogView = inflater.inflate(R.layout.formulaire_ajout_plein, null)
-
-            builder
-                .setView(dialogView)
-                .setPositiveButton("Ajouter") { dialog, which ->
-                    val editTextVolume = dialogView.findViewById<EditText>(R.id.editTextVolume)
-                    val editTextDistance = dialogView.findViewById<EditText>(R.id.editTextDistance)
-
-                    val volume = editTextVolume.text.toString().toDoubleOrNull() ?: 0.0
-                    val distance = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
-
-                    ajouterPlein(ValuesManager.currentIDCar, volume, distance)
-                    modifierDistances(ValuesManager.currentIDCar, distance)
-                }
-                .setNegativeButton("Abandonner") { dialog, which ->
-                    Toast.makeText(this, "Le plein ne sera pas ajoutÃ©.", Toast.LENGTH_SHORT).show()
-                }
-
-            val dialog: AlertDialog = builder.create()
-
-            dialog.setOnShowListener {
-                dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
-
-                dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
-                dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.RED)
             }
 
-            dialog.show()
-        }
+            buttonAddPlein.setOnClickListener {
+                val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+                val inflater = layoutInflater
+                val dialogView = inflater.inflate(R.layout.formulaire_ajout_plein, null)
 
-        initLogo()
-        getCurrentCar()
-        startFunctions(ValuesManager.currentIDCar)
+                builder
+                    .setView(dialogView)
+                    .setPositiveButton("Ajouter") { dialog, which ->
+                        val editTextVolume = dialogView.findViewById<EditText>(R.id.editTextVolume)
+                        val editTextDistance = dialogView.findViewById<EditText>(R.id.editTextDistance)
+
+                        val volume = editTextVolume.text.toString().toDoubleOrNull() ?: 0.0
+                        val distance = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
+
+                        ajouterPlein(idCurrentCar, volume, distance)
+                        modifierDistances(idCurrentCar, distance)
+                    }
+                    .setNegativeButton("Abandonner") { dialog, which ->
+                        Toast.makeText(this, "Le plein ne sera pas ajoutÃ©.", Toast.LENGTH_SHORT).show()
+                    }
+
+                val dialog: AlertDialog = builder.create()
+
+                dialog.setOnShowListener {
+                    dialog.window?.setBackgroundDrawableResource(R.color.background_card_add_plein)
+
+                    dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(Color.WHITE)
+                    dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(Color.RED)
+                }
+
+                dialog.show()
+            }
+
+            initLogo()
+            startFunctions(carId)
+        }
     }
 
     fun initLogo() {
@@ -267,25 +272,9 @@ class MainActivity : AppCompatActivity() {
     private fun startFunctions(valeur_id: Int) {
         recupererInfosVoitures(valeur_id)
         recupererDonneesGraphe(valeur_id)
-        disabledButtons(valeur_id)
     }
 
-    private fun disabledButtons(valeur_id: Int) {
-        if (valeur_id == 1) {
-            buttonLeftCar.isEnabled = false
-            buttonLeftCar.alpha = 0.5f
-            buttonRightCar.isEnabled = true
-            buttonRightCar.alpha = 1f
-        }
-
-        if (valeur_id == idMaxCar) {
-            buttonRightCar.isEnabled = false
-            buttonRightCar.alpha = 0.5f
-            buttonLeftCar.isEnabled = true
-            buttonLeftCar.alpha = 1f
-        }
-    }
-
+    @SuppressLint("SetTextI18n")
     private fun recupererInfosVoitures(valeur_id: Int) {
         val queue = Volley.newRequestQueue(this)
         val url = "use/your/script/recupererInfos.php?valeur_id=$valeur_id"
@@ -376,6 +365,7 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
+    @SuppressLint("SetTextI18n")
     private fun recupererInfosConducteur(distanceTotalParcourue: TextView) {
         val queue = Volley.newRequestQueue(this)
         val url = "use/your/script/recupererInfosConducteur.php"
@@ -405,20 +395,21 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
-    private fun getCurrentCar() {
+    private fun getCurrentCar(callback: (Int) -> Unit) {
         val queue = Volley.newRequestQueue(this)
         val url = "use/your/script/getCurrentCar.php"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
             { response ->
-                ValuesManager.currentIDCar = response.toInt()
-                idMaxCar = response.toInt()
+                val carId = response.toInt()
+                callback(carId)
             },
             { error ->
                 Log.e("Volley", "Erreur de requÃªte : ${error.message}")
                 Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos", Toast.LENGTH_SHORT).show()
-            })
+            }
+        )
 
         queue.add(stringRequest)
     }
@@ -517,6 +508,7 @@ class MainActivity : AppCompatActivity() {
         dialog.show()
     }
 
+    @SuppressLint("DefaultLocale", "SetTextI18n")
     private fun traiterDonnees(data: String): List<DataPoint> {
         val dataPoints = mutableListOf<DataPoint>()
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE)
