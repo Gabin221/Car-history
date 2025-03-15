@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Car history</string>
+    <string name="default_distance_search">20</string>
 </resources>

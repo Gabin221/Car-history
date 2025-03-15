@@ -7,33 +7,48 @@
     android:padding="16dp">
 
     <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Trouver une station"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:layout_marginBottom="20dp" />
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Distance en km :"
-        android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textColor="@color/white"
+        android:layout_marginBottom="5dp" />
 
     <EditText
         android:id="@+id/editTextDistance"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="numberDecimal"
-        android:text="20"
-        android:padding="10dp" />
+        android:padding="5dp"
+        android:layout_marginBottom="10dp"
+        android:textColor="@color/text_input_add_plein"
+        android:backgroundTint="@color/background_input_add_plein"
+        android:background="@drawable/rounded_elements_10"
+        android:text="@string/default_distance_search" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Sélectionnez les carburants :"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:layout_marginTop="10dp"/>
+        android:textColor="@color/white"
+        android:layout_marginBottom="5dp" />
 
     <ListView
         android:id="@+id/listViewCarburants"
         android:layout_width="match_parent"
-        android:layout_height="150dp"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:backgroundTint="@color/background_input_add_plein"
+        android:background="@drawable/rounded_elements_10"
         android:choiceMode="multipleChoice"
-        android:divider="@android:color/darker_gray"
+        android:divider="@color/white"
         android:dividerHeight="1dp" />
 </LinearLayout>
