@@ -17,6 +17,7 @@ import android.text.style.ImageSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.widget.ArrayAdapter
+import android.widget.CheckBox
 import android.widget.CheckedTextView
 import android.widget.EditText
 import android.widget.ImageView
@@ -67,6 +68,7 @@ class MainActivity : AppCompatActivity() {
     private var listeDates = mutableListOf<String>()
     private var listeDistances = mutableListOf<String>()
     private var listeVolumes = mutableListOf<String>()
+    private var listeSP = mutableListOf<String>()
     private var recordConsoValue = 0.0
     private var currentCarName = ""
     private var currentCarDist = 0.0
@@ -228,11 +230,14 @@ class MainActivity : AppCompatActivity() {
                     .setPositiveButton("Ajouter") { dialog, which ->
                         val editTextVolume = dialogView.findViewById<EditText>(R.id.editTextVolume)
                         val editTextDistance = dialogView.findViewById<EditText>(R.id.editTextDistance)
+                        val checkBoxSP98 = dialogView.findViewById<CheckBox>(R.id.checkBoxSP98)
 
                         val volume = editTextVolume.text.toString().toDoubleOrNull() ?: 0.0
                         val distance = editTextDistance.text.toString().toDoubleOrNull() ?: 0.0
 
-                        ajouterPlein(idCurrentCar, volume, distance)
+                        val sp98 = if (checkBoxSP98.isChecked) 1 else 0
+
+                        ajouterPlein(idCurrentCar, volume, distance, sp98)
                         modifierDistances(idCurrentCar, distance)
                     }
                     .setNegativeButton("Abandonner") { dialog, which ->
@@ -308,10 +313,11 @@ class MainActivity : AppCompatActivity() {
         queue.add(stringRequest)
     }
 
-    private fun ajouterPlein(valeur_id: Int, volume: Double, distance: Double) {
+    private fun ajouterPlein(valeur_id: Int, volume: Double, distance: Double, sp98: Int) {
         val date = getCurrentDate()
+
         val queue = Volley.newRequestQueue(this)
-        val url = "use/your/script/ajouterPlein.php?valeur_id=$valeur_id&volume=$volume&distance=$distance&date=$date"
+        val url = "use/your/script/ajouterPlein.php?valeur_id=$valeur_id&volume=$volume&distance=$distance&date=$date&sp98=$sp98"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
@@ -522,6 +528,7 @@ class MainActivity : AppCompatActivity() {
                     listeDates.add(elements[0])
                     listeDistances.add(elements[1])
                     listeVolumes.add(elements[2])
+                    listeSP.add(elements[3])
                     val distance = elements[1].toDouble()
                     val volume = elements[2].toDouble()
                     val consommation = volume * 100 / distance
@@ -615,7 +622,7 @@ class MainActivity : AppCompatActivity() {
         series.setOnDataPointTapListener { _, dataPoint ->
             val index = dataPoints.indexOf(dataPoint)
             if (index in listeDates.indices) {
-                afficherPopup(dataPoint as DataPoint, listeDates[index], listeDistances[index], listeVolumes[index])
+                afficherPopup(dataPoint as DataPoint, listeDates[index], listeDistances[index], listeVolumes[index], listeSP[index])
             }
         }
 
@@ -641,9 +648,10 @@ class MainActivity : AppCompatActivity() {
         lineGraphView.addSeries(series)
     }
 
-    private fun afficherPopup(dataPoint: DataPoint, date: String, distance: String, volume: String) {
+    private fun afficherPopup(dataPoint: DataPoint, date: String, distance: String, volume: String, sp: String) {
         val consommation = dataPoint.y
-        val message = "Date: $date\nDistance: $distance km\nVolume: $volume L\nConsommation: ${"%.3f".format(consommation)} L/100km"
+        val typeCarburant = if (sp == "1") "SP98" else "SP95"
+        val message = "Date: $date\nDistance: $distance km\nVolume: $volume L\nConsommation: ${"%.3f".format(consommation)} L/100km\nCarburant: $typeCarburant"
 
         val inflater = layoutInflater
         val layout = inflater.inflate(R.layout.custom_toast, findViewById(R.id.custom_toast_container))

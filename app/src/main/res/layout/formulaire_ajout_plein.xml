@@ -54,4 +54,19 @@
         android:background="@drawable/rounded_elements_10"
         tools:ignore="LabelFor" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <CheckBox
+            android:id="@+id/checkBoxSP98"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_sp98"
+            android:textColor="@color/white" />
+
+    </LinearLayout>
+
 </LinearLayout>
