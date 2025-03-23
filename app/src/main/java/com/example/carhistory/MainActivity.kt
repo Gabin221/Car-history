@@ -40,6 +40,7 @@ import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.GridLabelRenderer
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.LineGraphSeries
+import com.jjoe64.graphview.series.PointsGraphSeries
 import org.json.JSONArray
 import org.json.JSONException
 import java.util.Calendar
@@ -619,6 +620,21 @@ class MainActivity : AppCompatActivity() {
         val series = LineGraphSeries(dataPoints.toTypedArray())
         series.color = resources.getColor(R.color.chart_color, null)
 
+        val pointsSeries = PointsGraphSeries(dataPoints.toTypedArray())
+        pointsSeries.size = 8f
+
+        pointsSeries.setCustomShape { canvas, paint, x, y, dataPoint ->
+            val index = dataPoints.indexOf(dataPoint)
+            if (index in listeSP.indices) {
+                paint.color = if (listeSP[index] == "1") {
+                    resources.getColor(R.color.chart_color_sp98, null)
+                } else {
+                    resources.getColor(R.color.chart_color, null)
+                }
+                canvas.drawCircle(x, y, pointsSeries.size, paint)
+            }
+        }
+
         series.setOnDataPointTapListener { _, dataPoint ->
             val index = dataPoints.indexOf(dataPoint)
             if (index in listeDates.indices) {
@@ -646,6 +662,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         lineGraphView.addSeries(series)
+        lineGraphView.addSeries(pointsSeries)
     }
 
     private fun afficherPopup(dataPoint: DataPoint, date: String, distance: String, volume: String, sp: String) {
