@@ -65,6 +65,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var distanceTotalParcourue: TextView
     private lateinit var recordConso: TextView
     private lateinit var distanceCarParcourue: TextView
+    private lateinit var buttonReload: TextView
 
     private var listeDates = mutableListOf<String>()
     private var listeDistances = mutableListOf<String>()
@@ -83,7 +84,8 @@ class MainActivity : AppCompatActivity() {
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
         Pair(R.drawable.map_search_outline, "buttonSearchGasStation"),
-        Pair(R.drawable.plus_circle_outline, "buttonAddPlein")
+        Pair(R.drawable.plus_circle_outline, "buttonAddPlein"),
+        Pair(R.drawable.reload, "buttonReload")
     )
 
     @SuppressLint("SetTextI18n")
@@ -109,6 +111,7 @@ class MainActivity : AppCompatActivity() {
         textDistRun = findViewById(R.id.textDistRun)
         buttonSearchGasStation = findViewById(R.id.buttonSearchGasStation)
         textMean = findViewById(R.id.textMean)
+        buttonReload = findViewById(R.id.buttonReload)
 
         getCurrentCar { carId ->
             idMaxCar = carId
@@ -221,6 +224,11 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            buttonReload.setOnClickListener {
+                Toast.makeText(this, "Chargement des donnÃ©es en cours...", Toast.LENGTH_SHORT).show()
+                startFunctions(idCurrentCar)
+            }
+
             buttonAddPlein.setOnClickListener {
                 val builder: AlertDialog.Builder = AlertDialog.Builder(this)
                 val inflater = layoutInflater
@@ -308,7 +316,7 @@ class MainActivity : AppCompatActivity() {
             },
             { error ->
                 Log.e("Volley", "Erreur de requÃªte : ${error.message}")
-                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos de la voiture", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
@@ -396,7 +404,7 @@ class MainActivity : AppCompatActivity() {
             },
             { error ->
                 Log.e("Volley", "Erreur de requÃªte : ${error.message}")
-                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos du conducteur", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
@@ -414,7 +422,7 @@ class MainActivity : AppCompatActivity() {
             },
             { error ->
                 Log.e("Volley", "Erreur de requÃªte : ${error.message}")
-                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration la voiture actuelle", Toast.LENGTH_SHORT).show()
             }
         )
 
@@ -651,14 +659,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         lineGraphView.viewport.apply {
+            val yValues = dataPoints.map { it.y }
+            val minY = yValues.minOrNull() ?: 0.0
+            val maxY = yValues.maxOrNull() ?: 1.0
             isXAxisBoundsManual = true
             isScalable = true
             isScrollable = true
             setMinX(dataPoints.first().x)
             setMaxX(dataPoints.last().x)
             isYAxisBoundsManual = true
-            setMinY(0.85 * dataPoints.first().y)
-            setMaxY(1.15 * dataPoints.last().y)
+            setMinY(0.85 * minY)
+            setMaxY(1.15 * maxY)
         }
 
         lineGraphView.addSeries(series)
