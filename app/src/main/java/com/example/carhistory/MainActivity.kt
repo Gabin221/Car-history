@@ -1,4 +1,4 @@
-﻿package com.example.carhistory
+package com.example.carhistory
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -80,6 +80,7 @@ class MainActivity : AppCompatActivity() {
     private var idCurrentCar = 1
     private var idMaxCar = 1
     private var idMinCar = 1
+    private var nbrPointsGraphe = 15
 
     private val logoData = listOf(
         Pair(R.drawable.account_box_outline, "buttonAccount"),
@@ -156,7 +157,7 @@ class MainActivity : AppCompatActivity() {
                     idCurrentCar++
                     startFunctions(idCurrentCar)
                 } else {
-                    Toast.makeText(this, "Aucune voiture aprÃ¨s la $currentCarName", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Aucune voiture après la $currentCarName", Toast.LENGTH_SHORT).show()
                 }
             }
 
@@ -200,7 +201,7 @@ class MainActivity : AppCompatActivity() {
                             locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
                     if (!isLocationEnabled) {
-                        Toast.makeText(this, "La localisation est dÃ©sactivÃ©e. Veuillez l'activer.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "La localisation est désactivée. Veuillez l'activer.", Toast.LENGTH_LONG).show()
                         return@setOnClickListener
                     }
 
@@ -215,7 +216,7 @@ class MainActivity : AppCompatActivity() {
                     }
 
                     if (selectedCarburants.isEmpty()) {
-                        Toast.makeText(this, "Veuillez sÃ©lectionner au moins un carburant", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Veuillez sélectionner au moins un carburant", Toast.LENGTH_SHORT).show()
                     } else {
                         val carburantsQuery = selectedCarburants.joinToString(",")
                         recupererFindGasStation(this, distanceMetres, carburantsQuery)
@@ -225,7 +226,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             buttonReload.setOnClickListener {
-                Toast.makeText(this, "Chargement des donnÃ©es en cours...", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Chargement des données en cours...", Toast.LENGTH_SHORT).show()
                 startFunctions(idCurrentCar)
             }
 
@@ -250,7 +251,7 @@ class MainActivity : AppCompatActivity() {
                         modifierDistances(idCurrentCar, distance)
                     }
                     .setNegativeButton("Abandonner") { dialog, which ->
-                        Toast.makeText(this, "Le plein ne sera pas ajoutÃ©.", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(this, "Le plein ne sera pas ajouté.", Toast.LENGTH_SHORT).show()
                     }
 
                 val dialog: AlertDialog = builder.create()
@@ -291,7 +292,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     private fun recupererInfosVoitures(valeur_id: Int) {
         val queue = Volley.newRequestQueue(this)
-        val url = "use/your/script/recupererInfos.php?valeur_id=$valeur_id"
+        val url = "use/your/api?valeur_id=$valeur_id"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
@@ -315,8 +316,8 @@ class MainActivity : AppCompatActivity() {
 
             },
             { error ->
-                Log.e("Volley", "Erreur de requÃªte : ${error.message}")
-                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos de la voiture", Toast.LENGTH_SHORT).show()
+                Log.e("Volley", "Erreur de requête : ${error.message}")
+                Toast.makeText(this, "Problème de récupération des infos de la voiture", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
@@ -326,23 +327,23 @@ class MainActivity : AppCompatActivity() {
         val date = getCurrentDate()
 
         val queue = Volley.newRequestQueue(this)
-        val url = "use/your/script/ajouterPlein.php?valeur_id=$valeur_id&volume=$volume&distance=$distance&date=$date&sp98=$sp98"
+        val url = "use/your/api/ajouterPlein.php?valeur_id=$valeur_id&volume=$volume&distance=$distance&date=$date&sp98=$sp98"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
             { response ->
-                Toast.makeText(this, "Le plein a Ã©tÃ© ajoutÃ© avec succÃ¨s.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Le plein a été ajouté avec succès.", Toast.LENGTH_SHORT).show()
             },
             { error ->
-                Log.e("Volley", "Erreur de requÃªte : ${error.message}")
-                Toast.makeText(this, "ProblÃ¨me lors de l'ajout du plein.", Toast.LENGTH_SHORT).show()
+                Log.e("Volley", "Erreur de requête : ${error.message}")
+                Toast.makeText(this, "Problème lors de l'ajout du plein.", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
     }
 
     private fun recupererDonneesGraphe(valeur_id: Int) {
-        val url = "use/your/script/recupererPleins.php?valeur_id=$valeur_id"
+        val url = "use/your/api/recupererPleins.php?valeur_id=$valeur_id"
 
         val queue = Volley.newRequestQueue(this)
         val stringRequest = StringRequest(
@@ -356,7 +357,7 @@ class MainActivity : AppCompatActivity() {
                 }
             },
             { error ->
-                Log.e("Volley", "Erreur requÃªte : ${error.networkResponse?.statusCode} - ${error.message}")
+                Log.e("Volley", "Erreur requête : ${error.networkResponse?.statusCode} - ${error.message}")
             }
         )
 
@@ -365,16 +366,16 @@ class MainActivity : AppCompatActivity() {
 
     private fun modifierDistances(valeur_id: Int, distance: Double) {
         val queue = Volley.newRequestQueue(this)
-        val url = "use/your/script/modifierDistance.php?valeur_id=$valeur_id&distance=$distance"
+        val url = "use/your/api/modifierDistance.php?valeur_id=$valeur_id&distance=$distance"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
             { response ->
-                Toast.makeText(this, "Les distances ont Ã©tÃ© mises Ã  jour avec succÃ¨s.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Les distances ont été mises à jour avec succès.", Toast.LENGTH_SHORT).show()
             },
             { error ->
-                Log.e("Volley", "Erreur de requÃªte : ${error.message}")
-                Toast.makeText(this, "ProblÃ¨me lors de la mise Ã  jour des distances.", Toast.LENGTH_SHORT).show()
+                Log.e("Volley", "Erreur de requête : ${error.message}")
+                Toast.makeText(this, "Problème lors de la mise à jour des distances.", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
@@ -383,7 +384,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("SetTextI18n")
     private fun recupererInfosConducteur(distanceTotalParcourue: TextView) {
         val queue = Volley.newRequestQueue(this)
-        val url = "use/your/script/recupererInfosConducteur.php"
+        val url = "use/your/api/recupererInfosConducteur.php"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
@@ -403,8 +404,8 @@ class MainActivity : AppCompatActivity() {
                 distanceTotalParcourue.text = "$km_totaux km parcourus soit environ ${"%.0f".format(moyenneKmAn)} km/an"
             },
             { error ->
-                Log.e("Volley", "Erreur de requÃªte : ${error.message}")
-                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration des infos du conducteur", Toast.LENGTH_SHORT).show()
+                Log.e("Volley", "Erreur de requête : ${error.message}")
+                Toast.makeText(this, "Problème de récupération des infos du conducteur", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
@@ -412,7 +413,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun getCurrentCar(callback: (Int) -> Unit) {
         val queue = Volley.newRequestQueue(this)
-        val url = "use/your/script/getCurrentCar.php"
+        val url = "use/your/api/getCurrentCar.php"
 
         val stringRequest = StringRequest(
             Request.Method.GET, url,
@@ -421,8 +422,8 @@ class MainActivity : AppCompatActivity() {
                 callback(carId)
             },
             { error ->
-                Log.e("Volley", "Erreur de requÃªte : ${error.message}")
-                Toast.makeText(this, "ProblÃ¨me de rÃ©cupÃ©ration la voiture actuelle", Toast.LENGTH_SHORT).show()
+                Log.e("Volley", "Erreur de requête : ${error.message}")
+                Toast.makeText(this, "Problème de récupération la voiture actuelle", Toast.LENGTH_SHORT).show()
             }
         )
 
@@ -448,7 +449,7 @@ class MainActivity : AppCompatActivity() {
                 }
             },
             { error ->
-                Toast.makeText(context, "Erreur de requÃªte : ${error.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Erreur de requête : ${error.message}", Toast.LENGTH_SHORT).show()
             })
 
         queue.add(stringRequest)
@@ -458,7 +459,7 @@ class MainActivity : AppCompatActivity() {
     private fun afficherResultatRecherche(context: Context, resultatJson: String) {
         val builder = AlertDialog.Builder(context)
 
-        val title = SpannableString("RÃ©sultats de la recherche")
+        val title = SpannableString("Résultats de la recherche")
         title.setSpan(ForegroundColorSpan(Color.WHITE), 0, title.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
         builder.setTitle(title)
 
@@ -491,7 +492,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         val txtSortPrice = TextView(context).apply {
-            text = "Tri par ðŸ’°"
+            text = "Tri par 💰"
             setTextColor(Color.LTGRAY)
             textSize = 16f
             setPadding(60, 0, 0, 0)
@@ -625,10 +626,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun graphe1(dataPoints: List<DataPoint>) {
-        val series = LineGraphSeries(dataPoints.toTypedArray())
+        val displayedPoints = if (dataPoints.size > nbrPointsGraphe) dataPoints.takeLast(nbrPointsGraphe) else dataPoints
+
+        val series = LineGraphSeries(displayedPoints.toTypedArray())
         series.color = resources.getColor(R.color.chart_color, null)
 
-        val pointsSeries = PointsGraphSeries(dataPoints.toTypedArray())
+        val pointsSeries = PointsGraphSeries(displayedPoints.toTypedArray())
         pointsSeries.size = 8f
 
         pointsSeries.setCustomShape { canvas, paint, x, y, dataPoint ->
@@ -659,14 +662,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         lineGraphView.viewport.apply {
-            val yValues = dataPoints.map { it.y }
+            val yValues = displayedPoints.map { it.y }
             val minY = yValues.minOrNull() ?: 0.0
             val maxY = yValues.maxOrNull() ?: 1.0
             isXAxisBoundsManual = true
             isScalable = true
             isScrollable = true
-            setMinX(dataPoints.first().x)
-            setMaxX(dataPoints.last().x)
+            setMinX(displayedPoints.first().x)
+            setMaxX(displayedPoints.last().x)
             isYAxisBoundsManual = true
             setMinY(0.85 * minY)
             setMaxY(1.15 * maxY)
@@ -746,7 +749,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateResultText(textView: TextView, stations: List<Station>) {
-        val resultText = stations.joinToString("\n") { "* ${it.nom} - ${it.distance} km - ${it.prix}â‚¬\n" }
+        val resultText = stations.joinToString("\n") { "* ${it.nom} - ${it.distance} km - ${it.prix}€\n" }
         textView.text = resultText
     }
 
